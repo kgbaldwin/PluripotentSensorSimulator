@@ -5,73 +5,83 @@
 from twisted.internet import task, reactor
 import random
 
+class Variable:
+    def __init__(self, rangeMin, rangeMax, energy, func):
+        self.energyUsage = energy  # how much energy taking a measurement of this variable consumes
+        self.func = func   # the processing function for this data
+        self.rng = rangeMax - rangeMin
+        self.rangeMin = rangeMin
+
+    def get_measurement(self):
+        return random.random() * self.rng + self.rangeMin
+
+
+
 # numbers are just filler right now
 class SensorNode:
     '''
     energy: initial energy capacity of sensor
-    variables: dictionary {"variableName": [int energyUsage, (float rangeMin, float rangeMax)] for one measurement}
+    variables: dictionary {"variableName": variable}
     '''
     def __init__(self, energy, variables):
         self.energy_level = energy
 
+        # create sensors for each of the variables sensable by this node
         self.variables = variables
-        self.variableSensors = {}
-        for item in self.variables:
-            range = self.variables[item][1]
-            self.variableSensors[item] = Sensor(range)
 
-        self.timer = task.LoopingCall(self._sleep)
-        self.timer.start(1)
+        self.timer1 = task.LoopingCall(self._sleep)
+        self.timer1.start(1)
+
+        # this should execute as often as the sensor is to be woken up
+        self.timer2 = task.LoopingCall(self.wakeup)
+        self.timer2.start(5)
 
         reactor.run()
 
-    def _sleep(self):
-        #if not self.timer.running:
-        #    self.timer.start(1)
 
+    # causes the sensor's power to drain slowly in sleep mode
+    def _sleep(self):
         print(self.energy_level)
         self.energy_level -= 0.5
 
-    # call other methods from here? yes
+
+    # enacts sensor node wakeup mode - performs all necessary tasks
     def wakeup(self):
-        self.timer.stop()
+        print("waking up")
+        self.timer1.stop()
+
         self.energy_level -= 3
 
         data = ''
         for item in self.variables:
-            value = self._measure(item)
-            # do computation
-            data += item + '\n'
-            data += value + '\n\n'
+            raw_value = self.variables[item].get_measurement()
+            self.energy_level -= self.variables[item].energyUsage
 
-        self._connect()
+            computed = self.variables[item].func(raw_value)
+
+            data += str(item) + '\n'
+            data += str(computed) + '\n\n'
+
         self._send_data(data)
 
-        self.timer.start(1)  # re-enters sleep mode
+        self.timer1.start(1)  # re-enters sleep mode
 
-    def _measure(self, variable):
-        self.energy_level -= self.variables[variable]
-
-    def _connect(self):  # turning radio on/off (not tcp)
-        self.energy_level -= 5
 
     def _send_data(self, data):
-        # wait but I should do this over time b/c not sleeping
-        self.energy_level -= len(data)*2
+        self.energy_level -= 5 # turning radio on/off (not tcp)
 
-    def _curr_energy(self):
+        #  but I should do this over time b/c it's not sleeping for that time
+        self.energy_level -= len(data) * 0.4
+
+
+    def curr_energy(self):
         return self.energy_level
 
-
-class Sensor:
-    def __init__(self, range):
-        self.min = range[0]
-        self.rng = range[1]-range[0]
-
-    def get_measurement(self):
-        return random.random() * self.rng + self.min
+def dummy(input):
+    print(f"~~ doing stuff with input {input} ~~")
 
 
-
-variables = {"temperature": [2, (-20, 100)], "light": [3, (0, 5)]}
+var1 = Variable(-20, 100, 2, dummy)
+var2 = Variable(0, 5, 3, dummy)
+variables = {"temp": var1, "light": var2}
 sensor1 = SensorNode(100, variables)
