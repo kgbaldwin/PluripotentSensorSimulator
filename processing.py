@@ -1,10 +1,10 @@
 
 import numpy as np
 
-def dummy(input):
-    print(f"~~ doing stuff with input {input} ~~")
+def occupancy(inputs):
+    print(f"calculating occupancy using temp input \n{inputs['temp']}\n and light input \n{inputs['light']}")
 
-def avg(input):
-    output = np.average(input)
+def tempAvg(inputs):
+    output = np.average(input[0])
     print("Average: " + str(output))
     return output

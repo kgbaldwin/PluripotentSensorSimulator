@@ -10,9 +10,9 @@ import processing
 
 
 class Variable:
-    def __init__(self, rangeMin, rangeMax, energy, func, histlen: int):
+    def __init__(self, rangeMin, rangeMax, energy, histlen: int):
         self.energyUsage = energy  # how much energy taking a measurement of this variable consumes
-        self.func = func   # the processing function for this data
+
         self.rng = rangeMax - rangeMin  # range of possible output values for a measurement
         self.rangeMin = rangeMin   # min of possible output values for a measurement
         self.histlen = histlen   # number of prior values to keep
@@ -28,11 +28,11 @@ class SensorNode:
     energy: initial energy capacity of sensor
     variables: dictionary {"variableName": variable}
     '''
-    def __init__(self, energy, variables):
+    def __init__(self, energy, variables, functions, bandwidth):
         self.energy_level = energy
 
-        # create sensors for each of the variables sensable by this node
         self.variables = variables
+        self.functions = functions   # inputs must be enclosed in a dictionary
 
         # maps variable name to list storing current cache of data and the next index to be filled
         self.data = {}
@@ -43,6 +43,7 @@ class SensorNode:
                 self.min_interval = self.variables[item].histlen
 
         self.since_last_sent = 0
+        self.bandwidth = bandwidth  ## units??
 
         self.timer1 = task.LoopingCall(self._sleep)
         self.timer1.start(1)
@@ -76,9 +77,17 @@ class SensorNode:
 
             self.energy_level -= self.variables[item].energyUsage
 
-            computed = self.variables[item].func(data_r[0])
+        for func in self.functions:
 
-            data += str(item) + '\n'
+            # compile inputs to function
+            input_vars = self.functions[func]
+            input_dict = {}
+            for var in input_vars:
+                input_dict[var] = self.data[var][0]
+
+            computed = func(input_dict)
+
+            data += str(func) + '\n'
             data += str(computed) + '\n\n'
 
         self._send_data(data)
@@ -125,17 +134,22 @@ class SensorNode:
     def _send_data(self, data):
         self.energy_level -= 5 # turning radio on/off (not tcp)
 
+        print("\nSENDING DATA")
         print(data)
 
         #  but I should do this over time b/c it's not sleeping for that time
-        self.energy_level -= len(data) * 0.4
+        self.energy_level -= (len(data) / self.bandwidth) * 0.4
 
 
     def curr_energy(self):
         return self.energy_level
 
 
-var1 = Variable(-20, 100, 2, processing.dummy, 6)
-var2 = Variable(0, 5, 3, processing.avg, 6)
+var1 = Variable(-20, 100, 2, 6)
+var2 = Variable(0, 5, 3, 6)
 variables = {"temp": var1, "light": var2}
-sensor1 = SensorNode(100, variables)
+
+# function reference : variables to be inputted
+functions = {processing.tempAvg: ["temp"], processing.occupancy: ["temp", "light"]}
+
+sensor1 = SensorNode(100, variables, functions, 42)
