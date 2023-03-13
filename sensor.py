@@ -43,6 +43,7 @@ class SensorNode:
                 self.min_interval = self.variables[item].histlen
 
         self.since_last_sent = 0
+        self.sending_data = False
         self.bandwidth = bandwidth  ## units??
 
         self.timer1 = task.LoopingCall(self._sleep)
@@ -57,25 +58,27 @@ class SensorNode:
 
     # causes the sensor's power to drain slowly in sleep mode
     def _sleep(self):
-        print(self.energy_level)
+        print("sleep: " + str(self.energy_level))
         self.energy_level -= 0.5
 
 
     # enacts sensor node wakeup mode - performs all necessary tasks
     def wakeup(self):
-        print("waking up")
-        self.timer1.stop()
+        print("[compute] waking up")
+        if self.timer1.running:
+            self.timer1.stop()
+
+        if self.energy_level < 0:
+            self.timer2.stop()
+            reactor.stop()
+            return
 
         self.energy_level -= 3
 
         data = ''
-        for item in self.variables:
-            raw_value = self.variables[item].get_measurement()
-            data_r = self.data[item]
-            data_r[0][data_r[1]] = raw_value
-            data_r[1] = (data_r[1] + 1) % self.variables[item].histlen
 
-            self.energy_level -= self.variables[item].energyUsage
+        self.get_measurements()
+
 
         for func in self.functions:
 
@@ -96,28 +99,28 @@ class SensorNode:
 
 
     def raw_data_wakeup(self):
-        print("waking up")
+        print("[raw] waking up")
         self.timer1.stop()
+
+        if self.energy_level < 0:
+            self.timer2.stop()
+            reactor.stop()
+            return
 
         self.energy_level -= 3
 
         # take measurements
-        for item in self.variables:
-            raw_value = self.variables[item].get_measurement()
-            data_r = self.data[item]
-            data_r[0][data_r[1]] = raw_value
-            data_r[1] = (data_r[1] + 1) % self.variables[item].histlen
-
-            self.energy_level -= self.variables[item].energyUsage
+        self.get_measurements()
 
         # check if it's time to send data
         self.since_last_sent += 1
         if self.since_last_sent == self.min_interval:
+            self.timer2.stop()
+
             self.since_last_sent = 0
 
             # accumulate message containing all data
             data = ''
-
             for item in self.variables:
                 data += item + '\n'
                 data_arr = self.data[item][0]
@@ -127,29 +130,55 @@ class SensorNode:
 
             self._send_data(data)
 
-        self.timer1.start(1)  # re-enters sleep mode
+        if not self.sending_data:
+            self.timer1.start(1)  # re-enters sleep mode
 
+
+    def get_measurements(self):
+        for item in self.variables:
+            raw_value = self.variables[item].get_measurement()
+            data_r = self.data[item]
+            data_r[0][data_r[1]] = raw_value
+            data_r[1] = (data_r[1] + 1) % self.variables[item].histlen
+
+            self.energy_level -= self.variables[item].energyUsage
 
 
     def _send_data(self, data):
+        self.sending_data = True
+
         self.energy_level -= 5 # turning radio on/off (not tcp)
 
         print("\nSENDING DATA")
         print(data)
 
-        #  but I should do this over time b/c it's not sleeping for that time
-        self.energy_level -= (len(data) / self.bandwidth) * 0.4
+        self.sending = task.LoopingCall(self.packet_energy)
+        self.sending.start(0.4)
+
+        self.stop_sending = task.LoopingCall(self.data_sent)
+        print("Stop interval: " + str(len(data) / self.bandwidth))
+        self.stop_sending.start(len(data) / self.bandwidth, now=False)
 
 
-    def curr_energy(self):
-        return self.energy_level
+    def packet_energy(self):
+        print("packet energy")
+        self.energy_level -= 2
 
 
-var1 = Variable(-20, 100, 2, 6)
-var2 = Variable(0, 5, 3, 6)
+    def data_sent(self):
+        self.sending.stop()
+        self.stop_sending.stop()
+        self.sending_data = False
+        self.timer1.start(1)
+        self.timer2.start(3, now=False)
+
+
+
+var1 = Variable(-20, 100, 2, 5)
+var2 = Variable(0, 5, 3, 5)
 variables = {"temp": var1, "light": var2}
 
 # function reference : variables to be inputted
 functions = {processing.tempAvg: ["temp"], processing.occupancy: ["temp", "light"]}
 
-sensor1 = SensorNode(100, variables, functions, 42)
+sensor1 = SensorNode(100, variables, functions, 50)
