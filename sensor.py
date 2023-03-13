@@ -50,7 +50,7 @@ class SensorNode:
         self.timer1.start(1)
 
         # this should execute as often as the sensor is to be woken up
-        self.timer2 = task.LoopingCall(self.raw_data_wakeup)
+        self.timer2 = task.LoopingCall(self.wakeup) # raw_data_
         self.timer2.start(3)
 
         reactor.run()
@@ -65,8 +65,7 @@ class SensorNode:
     # enacts sensor node wakeup mode - performs all necessary tasks
     def wakeup(self):
         print("[compute] waking up")
-        if self.timer1.running:
-            self.timer1.stop()
+        self.timer1.stop()
 
         if self.energy_level < 0:
             self.timer2.stop()
@@ -74,11 +73,9 @@ class SensorNode:
             return
 
         self.energy_level -= 3
-
-        data = ''
-
         self.get_measurements()
 
+        data = ''
 
         for func in self.functions:
 
@@ -90,12 +87,13 @@ class SensorNode:
 
             computed = func(input_dict)
 
-            data += str(func) + '\n'
+            data += str(func) + '\n'   ### find a way to name the functions
             data += str(computed) + '\n\n'
 
         self._send_data(data)
 
-        self.timer1.start(1)  # re-enters sleep mode
+        if not self.sending_data:
+            self.timer1.start(1)  # re-enters sleep mode
 
 
     def raw_data_wakeup(self):
@@ -116,8 +114,6 @@ class SensorNode:
         self.since_last_sent += 1
         if self.since_last_sent == self.min_interval:
             self.timer2.stop()
-
-            self.since_last_sent = 0
 
             # accumulate message containing all data
             data = ''
@@ -146,6 +142,7 @@ class SensorNode:
 
     def _send_data(self, data):
         self.sending_data = True
+        self.since_last_sent = 0
 
         self.energy_level -= 5 # turning radio on/off (not tcp)
 
@@ -170,7 +167,8 @@ class SensorNode:
         self.stop_sending.stop()
         self.sending_data = False
         self.timer1.start(1)
-        self.timer2.start(3, now=False)
+        if not self.timer2.running:
+            self.timer2.start(3, now=False)
 
 
 
