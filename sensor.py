@@ -7,6 +7,16 @@ import random
 import numpy as np
 
 
+# constants (move to separate file? include in configs?)
+SLEEP_FREQ = 1
+WAKEUP_FREQ = 3
+
+SLEEP_ENERGY = 0.5
+WAKEUP_ENERGY = 3
+
+RADIO_ENERGY = 2
+PACKET_ENERGY = 1
+
 class Variable:
     def __init__(self, rangeMin, rangeMax, energy, histlen: int):
         self.energyUsage = energy  # how much energy taking a measurement of this variable consumes
@@ -27,6 +37,7 @@ class SensorNode:
     '''
     def __init__(self, energy, variables: dict, functions: dict, bandwidth):
         self.energy_level = energy
+        self.bandwidth = bandwidth  ## units??
 
         self.variables = variables
         self.functions = functions   # inputs must be enclosed in a dictionary
@@ -40,23 +51,23 @@ class SensorNode:
                 self.min_interval = self.variables[item].histlen
 
         self.since_last_sent = 0
-        self.sending_data = False
-        self.bandwidth = bandwidth  ## units??
+        self.sending_data = False  # whether sensor is currently sending data to computer
 
+        # periodically calls sleep energy drainage function
         self.timer1 = task.LoopingCall(self._sleep)
-        self.timer1.start(1)
+        self.timer1.start(SLEEP_FREQ)
 
-        # this should execute as often as the sensor is to be woken up
+        # periodically calls wakeup function
         self.timer2 = task.LoopingCall(self.raw_data_wakeup) # raw_data_
-        self.timer2.start(3)
+        self.timer2.start(WAKEUP_FREQ)
 
         reactor.run()
 
 
-    # causes the sensor's power to drain slowly in sleep mode
+    # decreases sensor's power by amount corresponding to sleep mode
     def _sleep(self):
         print("sleep: " + str(self.energy_level))
-        self.energy_level -= 0.5
+        self.energy_level -= SLEEP_ENERGY
 
 
     # enacts sensor node wakeup mode - performs all necessary tasks
@@ -69,7 +80,7 @@ class SensorNode:
             reactor.stop()
             return
 
-        self.energy_level -= 3
+        self.energy_level -= WAKEUP_ENERGY
         self.get_measurements()
 
         data = ''
@@ -90,7 +101,7 @@ class SensorNode:
         self._send_data(data)
 
         if not self.sending_data:
-            self.timer1.start(1)  # re-enters sleep mode
+            self.timer1.start(SLEEP_FREQ)  # re-enters sleep mode
 
 
     def raw_data_wakeup(self):
@@ -102,9 +113,8 @@ class SensorNode:
             reactor.stop()
             return
 
-        self.energy_level -= 3
+        self.energy_level -= WAKEUP_ENERGY
 
-        # take measurements
         self.get_measurements()
 
         # check if it's time to send data
@@ -124,13 +134,16 @@ class SensorNode:
             self._send_data(data)
 
         if not self.sending_data:
-            self.timer1.start(1)  # re-enters sleep mode
+            self.timer1.start(SLEEP_FREQ)  # re-enters sleep mode
 
 
     def get_measurements(self):
+
         for item in self.variables:
             raw_value = self.variables[item].get_measurement()
             data_r = self.data[item]
+
+            # data_r[0] is data array; data_r[1] is its next index to be filled
             data_r[0][data_r[1]] = raw_value
             data_r[1] = (data_r[1] + 1) % self.variables[item].histlen
 
@@ -141,7 +154,7 @@ class SensorNode:
         self.sending_data = True
         self.since_last_sent = 0
 
-        self.energy_level -= 5 # turning radio on/off (not tcp)
+        self.energy_level -= RADIO_ENERGY # turning radio on/off (not tcp)
 
         print("\nSENDING DATA")
         print(data)
@@ -156,15 +169,15 @@ class SensorNode:
 
     def packet_energy(self):
         print("packet energy")
-        self.energy_level -= 2
+        self.energy_level -= PACKET_ENERGY
 
 
     def data_sent(self):
         self.sending.stop()
         self.stop_sending.stop()
         self.sending_data = False
-        self.timer1.start(1)
+        self.timer1.start(SLEEP_FREQ)
         if not self.timer2.running:
-            self.timer2.start(3, now=False)
+            self.timer2.start(WAKEUP_FREQ, now=False)
 
 
