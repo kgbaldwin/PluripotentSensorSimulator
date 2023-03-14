@@ -1,10 +1,14 @@
 # Junior Independent Work - Katie Baldwin
 # Pluripotent Sensor Energy Simulator
 
+# Usage: python sensor.py configsFilename.txt
+# Function names must be entered directly into this file
+
 # https://stackoverflow.com/questions/474528/how-to-repeatedly-execute-a-function-every-x-seconds
 from twisted.internet import task, reactor
 import random
 import numpy as np
+import sys
 
 import processing
 
@@ -28,7 +32,7 @@ class SensorNode:
     energy: initial energy capacity of sensor
     variables: dictionary {"variableName": variable}
     '''
-    def __init__(self, energy, variables, functions, bandwidth):
+    def __init__(self, energy, variables: dict, functions: dict, bandwidth):
         self.energy_level = energy
 
         self.variables = variables
@@ -50,7 +54,7 @@ class SensorNode:
         self.timer1.start(1)
 
         # this should execute as often as the sensor is to be woken up
-        self.timer2 = task.LoopingCall(self.wakeup) # raw_data_
+        self.timer2 = task.LoopingCall(self.raw_data_wakeup) # raw_data_
         self.timer2.start(3)
 
         reactor.run()
@@ -172,11 +176,27 @@ class SensorNode:
 
 
 
-var1 = Variable(-20, 100, 2, 5)
-var2 = Variable(0, 5, 3, 5)
-variables = {"temp": var1, "light": var2}
+file = open(sys.argv[1])
+lines = file.readlines()
+
+variables = {}
+
+for line in lines:
+    info = line.split(":")
+
+    if info[0] == "Variable":
+        values = info[2].split(",")
+        for i in range(len(values)-1):
+            values[i] = float(values[i])
+        variables[info[1]] = Variable(values[0], values[1], values[2], int(values[3]))
+
+    elif info[0] == "Energy":
+        energy = float(info[1])     ####### or int?
+    elif info[0] == "Bandwidth":
+        bandwidth = float(info[1])
+
 
 # function reference : variables to be inputted
 functions = {processing.tempAvg: ["temp"], processing.occupancy: ["temp", "light"]}
 
-sensor1 = SensorNode(100, variables, functions, 50)
+sensor1 = SensorNode(energy, variables, functions, bandwidth)

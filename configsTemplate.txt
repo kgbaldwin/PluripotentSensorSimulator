@@ -1,0 +1,4 @@
+Variable: varName: rangeMin rangeMax energy histlen
+Variable: varName: rangeMin rangeMax energy histlen
+Energy: initEnergy
+Bandwidth: bandwidth
