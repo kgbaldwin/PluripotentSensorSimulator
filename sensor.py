@@ -1,16 +1,10 @@
 # Junior Independent Work - Katie Baldwin
 # Pluripotent Sensor Energy Simulator
 
-# Usage: python sensor.py configsFilename.txt
-# Function names must be entered directly into this file
-
 # https://stackoverflow.com/questions/474528/how-to-repeatedly-execute-a-function-every-x-seconds
 from twisted.internet import task, reactor
 import random
 import numpy as np
-import sys
-
-import processing
 
 
 class Variable:
@@ -23,7 +17,6 @@ class Variable:
 
     def get_measurement(self):
         return random.random() * self.rng + self.rangeMin
-
 
 
 # numbers are just filler right now
@@ -175,28 +168,3 @@ class SensorNode:
             self.timer2.start(3, now=False)
 
 
-
-file = open(sys.argv[1])
-lines = file.readlines()
-
-variables = {}
-
-for line in lines:
-    info = line.split(":")
-
-    if info[0] == "Variable":
-        values = info[2].split(",")
-        for i in range(len(values)-1):
-            values[i] = float(values[i])
-        variables[info[1]] = Variable(values[0], values[1], values[2], int(values[3]))
-
-    elif info[0] == "Energy":
-        energy = float(info[1])     ####### or int?
-    elif info[0] == "Bandwidth":
-        bandwidth = float(info[1])
-
-
-# function reference : variables to be inputted
-functions = {processing.tempAvg: ["temp"], processing.occupancy: ["temp", "light"]}
-
-sensor1 = SensorNode(energy, variables, functions, bandwidth)
