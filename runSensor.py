@@ -1,6 +1,4 @@
 import sys
-from twisted.internet import task, reactor
-import numpy as np
 
 from sensor import SensorNode, Variable
 import processing
@@ -33,16 +31,3 @@ file.close()
 functions = {processing.tempAvg: ["temp"], processing.occupancy: ["temp", "light"]}
 
 sensor1 = SensorNode(energy, variables, functions, bandwidth)
-
-curr_energy = energy
-
-def append_energy():
-    global curr_energy
-    num = curr_energy - sensor1.energy_level
-    print(num)
-    curr_energy = sensor1.energy_level
-
-timer = task.LoopingCall(append_energy) # raw_data_
-timer.start(1)
-
-reactor.run()

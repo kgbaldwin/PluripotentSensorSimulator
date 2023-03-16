@@ -17,6 +17,7 @@ WAKEUP_ENERGY = 60
 RADIO_ENERGY = 60
 PACKET_ENERGY = 45
 
+
 class Variable:
     def __init__(self, rangeMin, rangeMax, energy, histlen: int):
         self.energyUsage = energy  # how much energy taking a measurement of this variable consumes
@@ -61,7 +62,16 @@ class SensorNode:
         self.timer2 = task.LoopingCall(self.raw_data_wakeup) # raw_data_
         self.timer2.start(WAKEUP_FREQ)
 
+        self.timer3 = task.LoopingCall(self.record_energy) # raw_data_
+        self.timer3.start(1, now=False)
+        self.prev_energy = self.energy_level
+
         reactor.run()
+
+
+    def record_energy(self):
+        print(self.prev_energy - self.energy_level)
+        self.prev_energy = self.energy_level
 
 
     # decreases sensor's power by amount corresponding to sleep mode
@@ -106,7 +116,7 @@ class SensorNode:
 
 
     def raw_data_wakeup(self):
-        print("[raw] waking up: " + str(self.energy_level))
+        #print("[raw] waking up: " + str(self.energy_level))
         self.timer1.stop()
 
         if self.energy_level < 0:
@@ -161,19 +171,19 @@ class SensorNode:
             reactor.stop()
             return
 
-        print("\nSENDING DATA")
-        print(data)
+        #print("\nSENDING DATA")
+        #print(data)
 
         self.sending = task.LoopingCall(self.packet_energy)
         self.sending.start(0.5)
 
         self.stop_sending = task.LoopingCall(self.data_sent)
-        print("Stop interval: " + str(len(data) / self.bandwidth))
+        #print("Stop interval: " + str(len(data) / self.bandwidth))
         self.stop_sending.start(len(data) / self.bandwidth, now=False)
 
 
     def packet_energy(self):
-        print("sending packet")
+        #print("sending packet")
         self.energy_level -= PACKET_ENERGY
 
 
