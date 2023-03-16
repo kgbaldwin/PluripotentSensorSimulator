@@ -1,0 +1,5 @@
+Variable: temp: -20, 100, 25, 5
+Variable: light: 0, 5, 25, 5
+Variable: other: 20, 80, 25, 5
+Energy: 180000
+Bandwidth: 50
