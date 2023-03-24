@@ -3,6 +3,7 @@
 
 # https://stackoverflow.com/questions/474528/how-to-repeatedly-execute-a-function-every-x-seconds
 from twisted.internet import task, reactor
+import subprocess
 import random
 import numpy as np
 
@@ -59,8 +60,8 @@ class SensorNode:
         self.timer1.start(SLEEP_FREQ)
 
         # periodically calls wakeup function
-        self.timer2 = task.LoopingCall(self.raw_data_wakeup) # raw_data_
-        self.timer2.start(WAKEUP_FREQ)
+        self.timer2 = task.LoopingCall(self.wakeup) # raw_data_
+        self.timer2.start(WAKEUP_FREQ, now=False)
 
         self.timer3 = task.LoopingCall(self.record_energy) # raw_data_
         self.timer3.start(1, now=False)
@@ -95,19 +96,30 @@ class SensorNode:
         # perform and record computations
         data = ''
         for func in self.functions:
+            func_str = func + "("
 
             # compile inputs to function
             input_vars = self.functions[func]
-            input_dict = {}
-            for var in input_vars:
-                input_dict[var] = self.data[var][0]
 
-            computed = func(input_dict)
+            for var in input_vars:
+                func_str += "{"
+                datapoints = self.data[var][0]
+                for i in range(len(datapoints)):
+                    func_str += str(datapoints[i])
+
+                    if i != len(datapoints)-1:
+                        func_str += ","
+                func_str += "}"
+
+
+            func_str = func_str + ")"
+
+            result = subprocess.check_output(['lua', '-l', 'processing', '-e', func_str])
 
             ## subtract function energy!!
 
             data += str(func) + '\n'   ### find a way to name the functions
-            data += str(computed) + '\n\n'
+            data += result.strip().decode('ascii') + '\n\n'
 
         self._send_data(data)
 
