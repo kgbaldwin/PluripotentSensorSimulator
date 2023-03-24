@@ -14,4 +14,7 @@ print()
 print(values)
 
 plt.plot(x, values)
+plt.title("Sensor's Current Draw over time")
+plt.xlabel("Seconds")
+plt.ylabel("Energy draw (mAh)")
 plt.show()
