@@ -27,7 +27,7 @@ class SensorNode:
     '''
     def __init__(self, energy, variables: dict, functions: dict, parameters: dict, raw):
         self.energy_level = energy
-        self.parameters = parameters  ## units??
+        self.parameters = parameters  ## units for bandwidth??
 
         self.variables = variables
         self.functions = functions
@@ -57,7 +57,7 @@ class SensorNode:
             else:
                 self.wakeup()
 
-            time_to_sleep = p["Wakeup_F"] - (datetime.datetime.now()-start).seconds
+            time_to_sleep = p["Wakeup_Fr"] - (datetime.datetime.now()-start).seconds
             self.energy_level -= time_to_sleep * p["Sleep_E"]
 
             self.record_energy()
@@ -70,7 +70,7 @@ class SensorNode:
 
     # enacts sensor node wakeup mode - performs all necessary tasks
     def wakeup(self):
-        print("[compute] waking up")
+        #print("[compute] waking up")
 
         if self.energy_level < 0:
             return
@@ -96,19 +96,22 @@ class SensorNode:
                         func_str += ","
                 func_str += "}"
 
-
             func_str = func_str + ")"
 
             # https://stackoverflow.com/questions/30841738/run-lua-script-from-python
-            result = subprocess.check_output(['lua', '-l', 'processing', '-e', func_str])
+            result = subprocess.check_output(['lua', '-l', 'processing1', '-e', func_str])
 
             ## subtract function energy!!
+            # 0.2 A per instruction (roughly)
+            # Instruction level + OS profiling for energy exposed software
 
             data += str(func) + '\n'   ### find a way to name the functions
             data += result.strip().decode('ascii') + '\n\n'
 
-        print("DATA")
-        print(data)
+            #print(data)
+
+        #print("DATA")
+        #print(data)
         self._send_data(data)
 
 
