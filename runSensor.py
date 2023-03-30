@@ -1,5 +1,5 @@
 import sys
-from twisted.internet import task, reactor
+#from twisted.internet import task, reactor
 from sensor import SensorNode, Variable
 
 # Usage: python runSensor.py configsFilename.txt
@@ -16,24 +16,29 @@ for line in lines:
 
     if info[0] == "Variable":
         values = info[2].split(",")
-        for i in range(len(values)-1):
+        for i in range(len(values)):
             values[i] = float(values[i])
-        variables[info[1].strip()] = Variable(values[0], values[1], values[2], int(values[3]))
+        variables[info[1].strip()] = Variable(values[0], values[1], values[2])
 
-    elif info[0] == "Energy":
-        energy = float(info[1])     ####### or int?
+    elif info[0] == "Bufferlen":
+        parameters["Bufferlen"] = int(info[1])
 
     else:
         parameters[info[0]] = float(info[1])
 
 file.close()
 
-### function reference : variables to be inputted ###
+### function name : variables to be inputted ###
 functions = {"mean": ["temp"]}
+
+############ fill this automatically?
+############ what about loops?
+function_instr_lens = {"mean": 20}
+
 
 if sys.argv[2] == "raw":
     raw = True
 else:   # by convention, will be "compute"
     raw = False
 
-sensor1 = SensorNode(energy, variables, functions, parameters, raw)
+sensor1 = SensorNode(variables, functions, parameters, raw)

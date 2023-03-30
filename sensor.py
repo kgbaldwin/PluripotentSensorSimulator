@@ -8,12 +8,11 @@ import datetime
 
 
 class Variable:
-    def __init__(self, rangeMin, rangeMax, energy, histlen: int):
+    def __init__(self, rangeMin, rangeMax, energy):
         self.energyUsage = energy  # how much energy taking a measurement of this variable consumes
 
         self.rng = rangeMax - rangeMin  # range of possible output values for a measurement
         self.rangeMin = rangeMin   # min of possible output values for a measurement
-        self.histlen = histlen   # number of prior values to keep
 
     def get_measurement(self):
         return random.random() * self.rng + self.rangeMin
@@ -25,8 +24,8 @@ class SensorNode:
     energy: initial energy capacity of sensor
     variables: dictionary {"variableName": variable}
     '''
-    def __init__(self, energy, variables: dict, functions: dict, parameters: dict, raw):
-        self.energy_level = energy
+    def __init__(self, variables: dict, functions: dict, parameters: dict, raw):
+        self.energy_level = parameters["Energy"]
         self.parameters = parameters  ## units for bandwidth??
 
         self.variables = variables
@@ -34,11 +33,8 @@ class SensorNode:
 
         # maps variable name to list storing current cache of data and the next index to be filled
         self.data = {}
-        self.min_interval = np.inf
         for item in self.variables:
-            self.data[item] = [np.zeros(self.variables[item].histlen), 0]
-            if self.variables[item].histlen < self.min_interval:
-                self.min_interval = self.variables[item].histlen
+            self.data[item] = [np.zeros(parameters["Bufferlen"]), 0]
 
         self.since_last_sent = 0
 
@@ -103,15 +99,13 @@ class SensorNode:
 
             ## subtract function energy!!
             # 0.2 A per instruction (roughly)
-            # Instruction level + OS profiling for energy exposed software
+            # from Instruction level + OS profiling for energy exposed software
+
+            # self.energy_level -= 0.2*
 
             data += str(func) + '\n'   ### find a way to name the functions
             data += result.strip().decode('ascii') + '\n\n'
 
-            #print(data)
-
-        #print("DATA")
-        #print(data)
         self._send_data(data)
 
 
@@ -126,7 +120,7 @@ class SensorNode:
 
         # check if it's time to send data
         self.since_last_sent += 1
-        if self.since_last_sent == self.min_interval:
+        if self.since_last_sent == self.parameters["Bufferlen"]:
 
             # accumulate message containing all data
             data = ''
@@ -148,11 +142,9 @@ class SensorNode:
 
             # data_r[0] is data array; data_r[1] is its next index to be filled
             data_r[0][data_r[1]] = raw_value
-            data_r[1] = (data_r[1] + 1) % self.variables[item].histlen
+            data_r[1] = (data_r[1] + 1) % self.parameters["Bufferlen"]
 
             self.energy_level -= self.variables[item].energyUsage
-
-        #print(self.data)
 
 
     def _send_data(self, data):

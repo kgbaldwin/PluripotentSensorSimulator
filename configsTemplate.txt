@@ -1,7 +1,8 @@
-Variable: varName: rangeMin rangeMax energy histlen
-Variable: varName: rangeMin rangeMax energy histlen
+Variable: varName: rangeMin rangeMax energy
+Variable: varName: rangeMin rangeMax energy
 Energy: initEnergy
 Bandwidth: bandwidth
+Bufferlen: number of raw values to be stored at once
 Wakeup_F: wakeup frequency (seconds)
 Packet_F: frequency for sending packets (seconds)
 Wakeup_E: wakeup energy consumption
