@@ -3,3 +3,8 @@ Variable: light: 0, 5, 25, 5
 Variable: other: 20, 80, 25, 5
 Energy: 180000
 Bandwidth: 50
+Wakeup_F: 3
+Sleep_E: 0.02
+Wakeup_E: 60
+Radio_E: 60
+Packet_E: 45

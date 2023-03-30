@@ -1,5 +1,5 @@
 import sys
-
+from twisted.internet import task, reactor
 from sensor import SensorNode, Variable
 
 # Usage: python runSensor.py configsFilename.txt
@@ -9,6 +9,7 @@ file = open(sys.argv[1], 'r')
 lines = file.readlines()
 
 variables = {}
+parameters = {}
 
 for line in lines:
     info = line.split(":")
@@ -21,8 +22,9 @@ for line in lines:
 
     elif info[0] == "Energy":
         energy = float(info[1])     ####### or int?
-    elif info[0] == "Bandwidth":
-        bandwidth = float(info[1])
+
+    else:
+        parameters[info[0]] = float(info[1])
 
 file.close()
 
@@ -34,4 +36,4 @@ if sys.argv[2] == "raw":
 else:   # by convention, will be "compute"
     raw = False
 
-sensor1 = SensorNode(energy, variables, functions, bandwidth, raw)
+sensor1 = SensorNode(energy, variables, functions, parameters, raw)

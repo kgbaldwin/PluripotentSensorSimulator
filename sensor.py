@@ -7,17 +7,6 @@ import numpy as np
 import datetime
 
 
-# constants (move to separate file? include in configs?)
-#SLEEP_FREQ = .5   # don't need anymore
-WAKEUP_FREQ = 3
-
-SLEEP_ENERGY = 0.02  # energy consumed in 1 second
-WAKEUP_ENERGY = 60
-
-RADIO_ENERGY = 60
-PACKET_ENERGY = 45
-
-
 class Variable:
     def __init__(self, rangeMin, rangeMax, energy, histlen: int):
         self.energyUsage = energy  # how much energy taking a measurement of this variable consumes
@@ -36,9 +25,9 @@ class SensorNode:
     energy: initial energy capacity of sensor
     variables: dictionary {"variableName": variable}
     '''
-    def __init__(self, energy, variables: dict, functions: dict, bandwidth, raw):
+    def __init__(self, energy, variables: dict, functions: dict, parameters: dict, raw):
         self.energy_level = energy
-        self.bandwidth = bandwidth  ## units??
+        self.parameters = parameters  ## units??
 
         self.variables = variables
         self.functions = functions
@@ -52,7 +41,6 @@ class SensorNode:
                 self.min_interval = self.variables[item].histlen
 
         self.since_last_sent = 0
-        self.sending_data = False  # whether sensor is currently sending data to computer
 
         self.prev_energy = self.energy_level
         self.start_loop(raw)
@@ -60,20 +48,19 @@ class SensorNode:
 
     def start_loop(self, raw):
 
-        while self.energy_level > 0:
+        p = self.parameters
 
+        while self.energy_level > 0:
             start = datetime.datetime.now()
             if raw:
                 self.raw_data_wakeup()
             else:
                 self.wakeup()
 
-            time_to_sleep = WAKEUP_FREQ - (datetime.datetime.now()-start).seconds
-
-            self.energy_level -= time_to_sleep * SLEEP_ENERGY
+            time_to_sleep = p["Wakeup_F"] - (datetime.datetime.now()-start).seconds
+            self.energy_level -= time_to_sleep * p["Sleep_E"]
 
             self.record_energy()
-
 
 
     def record_energy(self):
@@ -88,7 +75,7 @@ class SensorNode:
         if self.energy_level < 0:
             return
 
-        self.energy_level -= WAKEUP_ENERGY
+        self.energy_level -= self.parameters["Wakeup_E"]
         self.get_measurements()
 
         # perform and record computations
@@ -131,7 +118,7 @@ class SensorNode:
         if self.energy_level < 0:
             return
 
-        self.energy_level -= WAKEUP_ENERGY
+        self.energy_level -= self.parameters["Wakeup_E"]
         self.get_measurements()
 
         # check if it's time to send data
@@ -167,10 +154,10 @@ class SensorNode:
 
     def _send_data(self, data):
 
-        self.sending_data = True
         self.since_last_sent = 0
+        p = self.parameters
 
-        self.energy_level -= RADIO_ENERGY # turning radio on/off (not tcp)
+        self.energy_level -= p["Radio_E"] # turning radio on/off (not tcp)
 
         if self.energy_level < 0:  ## location isn't consistent
             return
@@ -178,4 +165,4 @@ class SensorNode:
         #print("\nSENDING DATA")
         #print(data)
 
-        self.energy_level -= PACKET_ENERGY * 2 * (len(data) / self.bandwidth)  #### math
+        self.energy_level -= p["Packet_E"] * 2 * (len(data) / p["Bandwidth"])  #### math - use packet_f instead of 2
