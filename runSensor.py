@@ -29,4 +29,9 @@ file.close()
 ### function reference : variables to be inputted ###
 functions = {"mean": ["temp"]}
 
-sensor1 = SensorNode(energy, variables, functions, bandwidth)
+if sys.argv[2] == "raw":
+    raw = True
+else:   # by convention, will be "compute"
+    raw = False
+
+sensor1 = SensorNode(energy, variables, functions, bandwidth, raw)

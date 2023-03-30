@@ -1,18 +1,17 @@
 # Junior Independent Work - Katie Baldwin
 # Pluripotent Sensor Energy Simulator
 
-# https://stackoverflow.com/questions/474528/how-to-repeatedly-execute-a-function-every-x-seconds
-from twisted.internet import task, reactor
 import subprocess
 import random
 import numpy as np
+import datetime
 
 
 # constants (move to separate file? include in configs?)
-SLEEP_FREQ = .5
+#SLEEP_FREQ = .5   # don't need anymore
 WAKEUP_FREQ = 3
 
-SLEEP_ENERGY = 0.01
+SLEEP_ENERGY = 0.02  # energy consumed in 1 second
 WAKEUP_ENERGY = 60
 
 RADIO_ENERGY = 60
@@ -37,12 +36,12 @@ class SensorNode:
     energy: initial energy capacity of sensor
     variables: dictionary {"variableName": variable}
     '''
-    def __init__(self, energy, variables: dict, functions: dict, bandwidth):
+    def __init__(self, energy, variables: dict, functions: dict, bandwidth, raw):
         self.energy_level = energy
         self.bandwidth = bandwidth  ## units??
 
         self.variables = variables
-        self.functions = functions   # inputs must be enclosed in a dictionary
+        self.functions = functions
 
         # maps variable name to list storing current cache of data and the next index to be filled
         self.data = {}
@@ -55,19 +54,26 @@ class SensorNode:
         self.since_last_sent = 0
         self.sending_data = False  # whether sensor is currently sending data to computer
 
-        # periodically calls sleep energy drainage function
-        self.timer1 = task.LoopingCall(self._sleep)
-        self.timer1.start(SLEEP_FREQ)
-
-        # periodically calls wakeup function
-        self.timer2 = task.LoopingCall(self.wakeup) # raw_data_
-        self.timer2.start(WAKEUP_FREQ, now=False)
-
-        self.timer3 = task.LoopingCall(self.record_energy) # raw_data_
-        self.timer3.start(1, now=False)
         self.prev_energy = self.energy_level
+        self.start_loop(raw)
 
-        reactor.run()
+
+    def start_loop(self, raw):
+
+        while self.energy_level > 0:
+
+            start = datetime.datetime.now()
+            if raw:
+                self.raw_data_wakeup()
+            else:
+                self.wakeup()
+
+            time_to_sleep = WAKEUP_FREQ - (datetime.datetime.now()-start).seconds
+
+            self.energy_level -= time_to_sleep * SLEEP_ENERGY
+
+            self.record_energy()
+
 
 
     def record_energy(self):
@@ -75,19 +81,11 @@ class SensorNode:
         self.prev_energy = self.energy_level
 
 
-    # decreases sensor's power by amount corresponding to sleep mode
-    def _sleep(self):
-        self.energy_level -= SLEEP_ENERGY
-
-
     # enacts sensor node wakeup mode - performs all necessary tasks
     def wakeup(self):
         print("[compute] waking up")
-        self.timer1.stop()
 
         if self.energy_level < 0:
-            self.timer2.stop()
-            reactor.stop()
             return
 
         self.energy_level -= WAKEUP_ENERGY
@@ -114,6 +112,7 @@ class SensorNode:
 
             func_str = func_str + ")"
 
+            # https://stackoverflow.com/questions/30841738/run-lua-script-from-python
             result = subprocess.check_output(['lua', '-l', 'processing', '-e', func_str])
 
             ## subtract function energy!!
@@ -121,19 +120,15 @@ class SensorNode:
             data += str(func) + '\n'   ### find a way to name the functions
             data += result.strip().decode('ascii') + '\n\n'
 
+        print("DATA")
+        print(data)
         self._send_data(data)
-
-        if not self.sending_data:
-            self.timer1.start(SLEEP_FREQ)  # re-enters sleep mode
 
 
     def raw_data_wakeup(self):
         #print("[raw] waking up: " + str(self.energy_level))
-        self.timer1.stop()
 
         if self.energy_level < 0:
-            self.timer2.stop()
-            reactor.stop()
             return
 
         self.energy_level -= WAKEUP_ENERGY
@@ -142,7 +137,6 @@ class SensorNode:
         # check if it's time to send data
         self.since_last_sent += 1
         if self.since_last_sent == self.min_interval:
-            self.timer2.stop()
 
             # accumulate message containing all data
             data = ''
@@ -154,9 +148,6 @@ class SensorNode:
                 data += '\n'
 
             self._send_data(data)
-
-        if not self.sending_data:
-            self.timer1.start(SLEEP_FREQ)  # re-enters sleep mode
 
 
     def get_measurements(self):
@@ -171,6 +162,8 @@ class SensorNode:
 
             self.energy_level -= self.variables[item].energyUsage
 
+        #print(self.data)
+
 
     def _send_data(self, data):
 
@@ -180,31 +173,9 @@ class SensorNode:
         self.energy_level -= RADIO_ENERGY # turning radio on/off (not tcp)
 
         if self.energy_level < 0:  ## location isn't consistent
-            reactor.stop()
             return
 
         #print("\nSENDING DATA")
         #print(data)
 
-        self.sending = task.LoopingCall(self.packet_energy)
-        self.sending.start(0.5)
-
-        self.stop_sending = task.LoopingCall(self.data_sent)
-        #print("Stop interval: " + str(len(data) / self.bandwidth))
-        self.stop_sending.start(len(data) / self.bandwidth, now=False)
-
-
-    def packet_energy(self):
-        #print("sending packet")
-        self.energy_level -= PACKET_ENERGY
-
-
-    def data_sent(self):
-        self.sending.stop()
-        self.stop_sending.stop()
-        self.sending_data = False
-        self.timer1.start(SLEEP_FREQ)
-        if not self.timer2.running:
-            self.timer2.start(WAKEUP_FREQ, now=False)
-
-
+        self.energy_level -= PACKET_ENERGY * 2 * (len(data) / self.bandwidth)  #### math
