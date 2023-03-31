@@ -1,10 +1,10 @@
-Variable: varName: rangeMin rangeMax energy
-Variable: varName: rangeMin rangeMax energy
+Variable: varName: rangeMin rangeMax energy measure_freq (minutes)
+Variable: varName: rangeMin rangeMax energy measure_freq (minutes)
 Energy: initEnergy
 Bandwidth: bandwidth
 Bufferlen: number of raw values to be stored at once
-Wakeup_F: wakeup frequency (seconds)
-Packet_F: frequency for sending packets (seconds)
+Wakeup_Fr: highest wakeup frequency (seconds) (LCD of measure_freqs)
+Packet_Fr: frequency for sending packets (seconds)
 Wakeup_E: wakeup energy consumption
 Packet_E: energy to send one packet
 Sleep_E: sleep energy consumption

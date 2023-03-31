@@ -1,18 +1,22 @@
 # Junior Independent Work - Katie Baldwin
+# Advised by Professor Amit Levy
 # Pluripotent Sensor Energy Simulator
 
-import subprocess
-import random
 import numpy as np
+import subprocess
 import datetime
+import random
+import math
 
 
 class Variable:
-    def __init__(self, rangeMin, rangeMax, energy):
-        self.energyUsage = energy  # how much energy taking a measurement of this variable consumes
+    def __init__(self, rangeMin, rangeMax, energy, frequency):
+        self.energyUsage = energy  # energy consumption of taking one measurement of this variable
 
         self.rng = rangeMax - rangeMin  # range of possible output values for a measurement
         self.rangeMin = rangeMin   # min of possible output values for a measurement
+
+        self.freq = frequency   # frequency at which this variable is measured
 
     def get_measurement(self):
         return random.random() * self.rng + self.rangeMin
@@ -33,45 +37,53 @@ class SensorNode:
 
         # maps variable name to list storing current cache of data and the next index to be filled
         self.data = {}
-        for item in self.variables:
-            self.data[item] = [np.zeros(parameters["Bufferlen"]), 0]
+        cycle_max = 1
+        min_freq = np.inf
+        #self.send_freq = np.inf
+        for name, item in self.variables.items():
+            self.data[name] = [np.zeros(parameters["Bufferlen"]), 0]
+            if min_freq > item.freq:
+                min_freq = item.freq
+                # undetermined behavior when frequencies aren't a multiple of wakeup_freq
 
+            num = int(item.freq // parameters["Wakeup_Fr"])
+            if cycle_max % num != 0:
+                cycle_max = math.lcm(cycle_max, num)
+
+        self.cycle = 0
+        self.cycle_max = cycle_max
+
+        self.send_freq = int((min_freq/parameters["Wakeup_Fr"])*parameters["Bufferlen"])
         self.since_last_sent = 0
 
-        self.prev_energy = self.energy_level
         self.start_loop(raw)
 
 
     def start_loop(self, raw):
 
         p = self.parameters
+        prev_energy = self.energy_level
 
         while self.energy_level > 0:
             start = datetime.datetime.now()
             if raw:
                 self.raw_data_wakeup()
             else:
-                self.wakeup()
+                self.compute_wakeup()   ## encode the frequencies for computations
 
             time_to_sleep = p["Wakeup_Fr"] - (datetime.datetime.now()-start).seconds
             self.energy_level -= time_to_sleep * p["Sleep_E"]
 
-            self.record_energy()
-
-
-    def record_energy(self):
-        print(self.prev_energy - self.energy_level)
-        self.prev_energy = self.energy_level
+            print(prev_energy - self.energy_level)
+            prev_energy = self.energy_level
 
 
     # enacts sensor node wakeup mode - performs all necessary tasks
-    def wakeup(self):
-        #print("[compute] waking up")
-
-        if self.energy_level < 0:
-            return
+    def compute_wakeup(self):
 
         self.energy_level -= self.parameters["Wakeup_E"]
+        if self.energy_level < 0:
+            return
         self.get_measurements()
 
         # perform and record computations
@@ -91,6 +103,7 @@ class SensorNode:
                     if i != len(datapoints)-1:
                         func_str += ","
                 func_str += "}"
+                #### comma if there are multiple
 
             func_str = func_str + ")"
 
@@ -110,25 +123,26 @@ class SensorNode:
 
 
     def raw_data_wakeup(self):
-        #print("[raw] waking up: " + str(self.energy_level))
-
-        if self.energy_level < 0:
-            return
 
         self.energy_level -= self.parameters["Wakeup_E"]
+        if self.energy_level < 0:
+            return
         self.get_measurements()
 
         # check if it's time to send data
         self.since_last_sent += 1
-        if self.since_last_sent == self.parameters["Bufferlen"]:
+        if self.since_last_sent == self.send_freq-1:
+            self.since_last_sent = 0
 
             # accumulate message containing all data
             data = ''
             for item in self.variables:
                 data += item + '\n'
                 data_arr = self.data[item][0]
-                for value in data_arr:
-                    data += str(value) + '\n'
+                self.data[item][1] = 0
+                for i in range(len(data_arr)):
+                    data += str(data_arr[i]) + '\n'
+                    data_arr[i] = 0
                 data += '\n'
 
             self._send_data(data)
@@ -136,20 +150,32 @@ class SensorNode:
 
     def get_measurements(self):
 
-        for item in self.variables:
-            raw_value = self.variables[item].get_measurement()
-            data_r = self.data[item]
+        b = self.parameters["Bufferlen"]
+        f = self.parameters["Wakeup_Fr"]
 
-            # data_r[0] is data array; data_r[1] is its next index to be filled
-            data_r[0][data_r[1]] = raw_value
-            data_r[1] = (data_r[1] + 1) % self.parameters["Bufferlen"]
+        for name, var in self.variables.items():
 
-            self.energy_level -= self.variables[item].energyUsage
+            if self.cycle%(var.freq // f) == 0:
+
+                raw_value = var.get_measurement()
+                data_r = self.data[name]
+
+                # data_r[0] is data array; data_r[1] is its next index to be filled
+                data_r[0][data_r[1]] = raw_value
+                data_r[1] = (data_r[1] + 1) % b
+
+                self.energy_level -= var.energyUsage
+
+        #print(self.cycle)
+        #for var in self.data:
+        #    print(var, self.data[var])
+        #print()
+
+        self.cycle = (self.cycle + 1) % self.cycle_max
 
 
     def _send_data(self, data):
 
-        self.since_last_sent = 0
         p = self.parameters
 
         self.energy_level -= p["Radio_E"] # turning radio on/off (not tcp)

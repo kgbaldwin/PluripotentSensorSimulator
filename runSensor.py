@@ -3,7 +3,7 @@ import sys
 from sensor import SensorNode, Variable
 
 # Usage: python runSensor.py configsFilename.txt
-# Function names must be entered directly into this file
+# Function names must be entered directly into this file (why?)
 
 file = open(sys.argv[1], 'r')
 lines = file.readlines()
@@ -16,9 +16,9 @@ for line in lines:
 
     if info[0] == "Variable":
         values = info[2].split(",")
-        for i in range(len(values)):
+        for i in range(len(values)-1):
             values[i] = float(values[i])
-        variables[info[1].strip()] = Variable(values[0], values[1], values[2])
+        variables[info[1].strip()] = Variable(values[0], values[1], values[2], int(values[3]))
 
     elif info[0] == "Bufferlen":
         parameters["Bufferlen"] = int(info[1])
@@ -35,10 +35,6 @@ functions = {"mean": ["temp"]}
 ############ what about loops?
 function_instr_lens = {"mean": 20}
 
-
-if sys.argv[2] == "raw":
-    raw = True
-else:   # by convention, will be "compute"
-    raw = False
+raw = (sys.argv[2]=="raw")
 
 sensor1 = SensorNode(variables, functions, parameters, raw)

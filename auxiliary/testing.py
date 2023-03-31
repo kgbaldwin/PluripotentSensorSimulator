@@ -43,15 +43,34 @@ reactor.run()
 # 3/23/23
 # https://stackoverflow.com/questions/30841738/run-lua-script-from-python
 # https://stackoverflow.com/questions/15374211/why-does-popen-communicate-return-bhi-n-instead-of-hi
-import subprocess
+#import subprocess
 
 #result = subprocess.check_output(['lua', '-l', 'demo', '-e', 'test("at", "p")'])
 #print(result.strip().decode('ascii'))
 
-result = subprocess.check_output(['lua', '-l', 'demo', '-e', 'mean({1,5,8,3,3})'])
-print(result.strip().decode('ascii'))
+#result = subprocess.check_output(['lua', '-l', 'demo', '-e', 'mean({1,5,8,3,3})'])
+#print(result.strip().decode('ascii'))
 
 #result = subprocess.check_output(['lua', '-l', 'demo', '-e', 'test2("a")'])
 #print(result)
 
+import math
 
+names = {"a":60, "b":30,"c":45}
+wakeup_fr = 15
+
+cycle_max = 1
+for var in names:
+    div = names[var] // wakeup_fr
+
+    if cycle_max%div != 0:
+        cycle_max = math.lcm(cycle_max, div)
+    print(cycle_max)
+
+print()
+
+for i in range(cycle_max):
+    print(i)
+    for item in names:
+        if i%(names[item]//wakeup_fr) == 0:
+            print("  " + item)
