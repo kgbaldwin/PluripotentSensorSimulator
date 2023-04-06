@@ -108,16 +108,20 @@ class SensorNode:
             func_str = func_str + ")"
 
             # https://stackoverflow.com/questions/30841738/run-lua-script-from-python
-            result = subprocess.check_output(['lua', '-l', 'processing1', '-e', func_str])
+            #result = subprocess.check_output(['lua', '-l', 'processing1', '-e', func_str])
+            output = subprocess.run(['/Users/Katie/Desktop/JRW/PluripotentSensorSimulator/mylua', 'processing1.lua'], capture_output=True)
+            result = output.stdout.decode()
+            #print(result.split())
+            #print()
 
             ## subtract function energy!!
             # 0.2 A per instruction (roughly)
             # from Instruction level + OS profiling for energy exposed software
 
-            # self.energy_level -= 0.2*
+            self.energy_level -= 0.2*int(result.split()[3])
 
             data += str(func) + '\n'   ### find a way to name the functions
-            data += result.strip().decode('ascii') + '\n\n'
+            data += result.strip() + '\n\n'
 
         self._send_data(data)
 
