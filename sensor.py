@@ -7,6 +7,7 @@ import subprocess
 import datetime
 import random
 import math
+import os
 
 
 class Variable:
@@ -109,15 +110,15 @@ class SensorNode:
 
             # https://stackoverflow.com/questions/30841738/run-lua-script-from-python
             #result = subprocess.check_output(['lua', '-l', 'processing1', '-e', func_str])
-            output = subprocess.run(['/Users/Katie/Desktop/JRW/PluripotentSensorSimulator/mylua', 'processing1.lua'], capture_output=True)
-            result = output.stdout.decode()
-            #print(result.split())
-            #print()
 
-            ## subtract function energy!!
-            # 0.2 A per instruction (roughly)
+            executable = os.getcwd() + '/mylua'
+            output = subprocess.run([executable, 'processing1.lua', '-e', 'mean()'], capture_output=True)
+            result = output.stdout.decode()   ## encoding from which to decode?
+
+            #### probably including data reading instructions
+
+            ## subtract function energy!! -- 0.2 A per instruction (roughly)
             # from Instruction level + OS profiling for energy exposed software
-
             self.energy_level -= 0.2*int(result.split()[3])
 
             data += str(func) + '\n'   ### find a way to name the functions
