@@ -1,8 +1,8 @@
 import subprocess
 import os
 
-# 'lua1_3.txt', 'lua1_6.txt', 'lua1_12.txt',
-fnames = ['lua2_3.txt',
+#
+fnames = ['lua1_3.txt', 'lua1_6.txt', 'lua1_12.txt', 'lua2_3.txt',
           'lua2_6.txt', 'lua2_12.txt', 'lua4_3.txt', 'lua4_6.txt', 'lua4_12.txt']
 
 executable = os.getcwd() + '/mylua'

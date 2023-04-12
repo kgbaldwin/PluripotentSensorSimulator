@@ -90,36 +90,40 @@ class SensorNode:
         # perform and record computations
         data = ''
         for func in self.functions:
-            func_str = func + "("
 
-            # compile inputs to function
-            input_vars = self.functions[func]
+            ### write data to file to send to lua
+            file = open("input.txt", "w")    ###### reserved filename
+            input_vars = self.functions[func] # vars to be inputted to function
 
             for var in input_vars:
-                func_str += "{"
                 datapoints = self.data[var][0]
                 for i in range(len(datapoints)):
-                    func_str += str(datapoints[i])
+                    file.write(str(datapoints[i]))
 
                     if i != len(datapoints)-1:
-                        func_str += ","
-                func_str += "}"
-                #### comma if there are multiple
+                        file.write(", ")
+                file.write("\n")
+            file.close()
 
-            func_str = func_str + ")"
+            #### write to luaRunner.lua
+            luaRunner = open("luaRunner.lua", "w")
+            luaRunner.write("local lib = require('processing1')\n")
+            luaRunner.write("local arrs = lib.lines_from('input.txt')\n")
+            luaRunner.write("-------------------\n")  # recorded at this point
+            luaRunner.write("lib.mean(arrs[1])")   ##### put function name here
+            luaRunner.close()
 
             # https://stackoverflow.com/questions/30841738/run-lua-script-from-python
-            #result = subprocess.check_output(['lua', '-l', 'processing1', '-e', func_str])
-
             executable = os.getcwd() + '/mylua'
-            output = subprocess.run([executable, 'processing1.lua', '-e', 'mean()'], capture_output=True)
+            #output = subprocess.run([executable, 'processing1.lua', '-e', 'calc_mean()'], capture_output=True)
+            output = subprocess.run([executable, 'luaRunner.lua'], capture_output=True)
             result = output.stdout.decode()   ## encoding from which to decode?
 
             #### probably including data reading instructions
 
             ## subtract function energy!! -- 0.2 A per instruction (roughly)
             # from Instruction level + OS profiling for energy exposed software
-            self.energy_level -= 0.2*int(result.split()[3])
+            self.energy_level -= 0.2*int(result.split()[2])  ###### index (whether runner prints)
 
             data += str(func) + '\n'   ### find a way to name the functions
             data += result.strip() + '\n\n'
