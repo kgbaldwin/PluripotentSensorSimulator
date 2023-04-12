@@ -1,0 +1,6 @@
+lua2_3.txt Instruction count: 208
+lua2_6.txt Instruction count: 325
+lua2_12.txt Instruction count: 559
+lua4_3.txt Instruction count: 290
+lua4_6.txt Instruction count: 461
+lua4_12.txt Instruction count: 803
