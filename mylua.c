@@ -9,7 +9,7 @@
 int instructions = 0;
 
 void instr_count (lua_State *L, lua_Debug *D) {
-    instructions += 5;
+    instructions += 1;
 }
 
 int main (int argc, char *argv[]) {
@@ -18,7 +18,7 @@ int main (int argc, char *argv[]) {
     lua_State *L = luaL_newstate();   /* opens Lua */
     luaL_openlibs(L);            /* opens the Lua libraries. */
 
-    lua_sethook(L, *instr_count, LUA_MASKCOUNT, 5);
+    lua_sethook(L, *instr_count, LUA_MASKCOUNT, 1);
 
     luaL_dofile(L, argv[1]);
 
