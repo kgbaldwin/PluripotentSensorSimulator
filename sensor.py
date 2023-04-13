@@ -32,6 +32,7 @@ class SensorNode:
 
         self.variables = variables
         self.functions = functions
+        self.func_load_inst = {}
 
         # maps variable name to list storing current cache of data and the next
         # index to be filled
@@ -129,14 +130,22 @@ class SensorNode:
             luaRunner.close()
 
 
+            # first, count how many instructions line-retrieving function takes
+            if len(self.func_load_inst) != len(self.functions):
+                self.count_load_instructions(func)
+
+
             # https://stackoverflow.com/questions/30841738/run-lua-script-from-python
             executable = os.getcwd() + '/mylua'
             output = subprocess.run([executable, 'luaRunner.lua'], capture_output=True)
-            result = output.stdout.decode()   ## encoding from which to decode?
+            result = output.stdout.decode()
+
+            # subtract data loading instructions
+            instructions = int(result.split()[2]) - self.func_load_inst[func]
 
             ## subtract function energy -- 0.2 A per instruction (roughly)
             # from Instruction level + OS profiling for energy exposed software
-            self.energy_level -= 0.2*int(result.split()[2])  ###### index (whether runner prints results)
+            self.energy_level -= 0.2*instructions  ###### index (whether runner prints results)
 
             data += str(func) + '\n'
             data += result.strip() + '\n\n'
@@ -199,3 +208,20 @@ class SensorNode:
             return
 
         self.energy_level -= p["Packet_E"] * 2 * (len(data) / p["Bandwidth"])  #### math - use packet_f instead of 2
+
+
+    # Counts number of instructions used to load data into lua file.
+    # Records in self.func_load_inst
+    def count_load_instructions(self, func):
+
+        luaCounter = open("luaCounter.lua", "w")
+        luaCounter.write("local lib = require('processing')\n")
+        luaCounter.write("local arrs = lib.lines_from('input.txt')\n")
+        luaCounter.close()
+
+        executable = os.getcwd() + '/mylua'
+
+        instructions = subprocess.run([executable, 'luaCounter.lua'], capture_output=True)
+        result = instructions.stdout.decode().split()[2]
+
+        self.func_load_inst[func] = int(result)
