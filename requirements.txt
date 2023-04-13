@@ -1,0 +1,6 @@
+numpy
+subprocess
+random
+math
+matplotlib
+# datetime?

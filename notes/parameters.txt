@@ -1,23 +1,7 @@
 PARAMETERS THAT CAN BE SPECIFIED
 
+[command line]
 - whether raw or computed wakeup
-
-
-- sleep LoopingCall frequency
-- wakeup LoopingCall frequency
-
-- sleep energy consumption
-- wakeup energy consumption (in both wakeup functions!)
-- energy usage of measuring each variable
-
-- turning radio on/off (off?)
-- energy of sending a packet
-    - frequency of sending packets?? still hard-coded
-- size of packet (is that incorporated in bandwidth?)
-
-
-- energy usage of computations (?)
-
 
 in configs:
 - initial energy of sensor
@@ -25,3 +9,12 @@ in configs:
 - energy usages of variables
 - output min/max of variables
 - num datapoints to be cached in sensor
+
+- sleep energy consumption
+- wakeup energy consumption
+- energy usage of measuring each variable
+
+- turning radio on/off (off?)
+- energy of sending a packet
+    - frequency of sending packets?? still hard-coded ######
+- size of packet (is that incorporated in bandwidth?)

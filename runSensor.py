@@ -2,7 +2,6 @@ import sys
 from sensor import SensorNode, Variable
 
 # Usage: python runSensor.py configsFilename.txt raw/compute
-# Function names must be entered directly into this file (why?)
 
 file = open(sys.argv[1], 'r')
 lines = file.readlines()

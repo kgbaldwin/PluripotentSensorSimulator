@@ -24,10 +24,9 @@ class Variable:
         return random.random() * self.rng + self.rangeMin
 
 
-# numbers are just filler right now
 class SensorNode:
 
-    def __init__(self, variables: dict, functions: dict, parameters: dict, raw):
+    def __init__(self, variables: dict, functions: dict, parameters: dict, raw: bool):
         self.energy_level = parameters["Energy"]
         self.parameters = parameters  ## units for bandwidth??
 
@@ -56,12 +55,12 @@ class SensorNode:
         self.send_freq = int((min_freq/parameters["Wakeup_Fr"])*parameters["Bufferlen"])
         self.since_last_sent = 0
 
-        self.start_loop(raw)
+        self.run_loop(raw)
 
 
     # Simulates lifetime-loop of sensor, calling other functions in the
     # appropriate sequence
-    def start_loop(self, raw):
+    def run_loop(self, raw):
 
         p = self.parameters
         prev_energy = self.energy_level
@@ -84,6 +83,8 @@ class SensorNode:
                 return
 
             # subtract sleeping energy
+            ### this is flat wrong ###
+            # one second per variable? maybe? per analysis of three
             time_to_sleep = p["Wakeup_Fr"] - (datetime.datetime.now()-start).seconds
             self.energy_level -= time_to_sleep * p["Sleep_E"]
 
