@@ -1,15 +1,15 @@
 import sys
-#from twisted.internet import task, reactor
 from sensor import SensorNode, Variable
 
-# Usage: python runSensor.py configsFilename.txt
+# Usage: python runSensor.py configsFilename.txt raw/compute
 # Function names must be entered directly into this file (why?)
 
 file = open(sys.argv[1], 'r')
 lines = file.readlines()
 
-variables = {}
-parameters = {}
+variables = {}   # variableName: variable object
+functions = {}   # functionName: variables to be inputted
+parameters = {}  # parameterName: value
 
 for line in lines:
     info = line.split(":")
@@ -20,6 +20,9 @@ for line in lines:
             values[i] = float(values[i])
         variables[info[1].strip()] = Variable(values[0], values[1], values[2], int(values[3]))
 
+    elif info[0] == "Function":
+        functions[info[1].strip()] = [var.strip() for var in info[2].split()]
+
     elif info[0] == "Bufferlen":
         parameters["Bufferlen"] = int(info[1])
 
@@ -27,13 +30,6 @@ for line in lines:
         parameters[info[0]] = float(info[1])
 
 file.close()
-
-### function name : variables to be inputted ###
-functions = {"mean": ["temp"]}
-
-############ fill this automatically?
-############ what about loops?
-function_instr_lens = {"mean": 20}
 
 raw = (sys.argv[2]=="raw")
 

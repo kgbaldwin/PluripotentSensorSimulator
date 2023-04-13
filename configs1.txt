@@ -1,6 +1,8 @@
 Variable: temp: -20, 100, 25, 60
 Variable: light: 0, 5, 25, 30
 Variable: other: 20, 80, 25, 45
+Function: mean: temp
+Function: covariance: temp light
 Energy: 180000
 Bandwidth: 50
 Bufferlen: 5

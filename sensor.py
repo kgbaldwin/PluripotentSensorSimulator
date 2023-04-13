@@ -1,5 +1,6 @@
-# Junior Independent Work - Katie Baldwin
+# Junior Independent Work - Spring 2023 - Katie Baldwin
 # Advised by Professor Amit Levy
+
 # Pluripotent Sensor Energy Simulator
 
 import numpy as np
@@ -25,10 +26,7 @@ class Variable:
 
 # numbers are just filler right now
 class SensorNode:
-    '''
-    energy: initial energy capacity of sensor
-    variables: dictionary {"variableName": variable}
-    '''
+
     def __init__(self, variables: dict, functions: dict, parameters: dict, raw):
         self.energy_level = parameters["Energy"]
         self.parameters = parameters  ## units for bandwidth??
@@ -36,11 +34,12 @@ class SensorNode:
         self.variables = variables
         self.functions = functions
 
-        # maps variable name to list storing current cache of data and the next index to be filled
+        # maps variable name to list storing current cache of data and the next
+        # index to be filled
         self.data = {}
         cycle_max = 1
         min_freq = np.inf
-        #self.send_freq = np.inf
+
         for name, item in self.variables.items():
             self.data[name] = [np.zeros(parameters["Bufferlen"]), 0]
             if min_freq > item.freq:
@@ -60,6 +59,8 @@ class SensorNode:
         self.start_loop(raw)
 
 
+    # Simulates lifetime-loop of sensor, calling other functions in the
+    # appropriate sequence
     def start_loop(self, raw):
 
         p = self.parameters
@@ -67,76 +68,84 @@ class SensorNode:
 
         while self.energy_level > 0:
             start = datetime.datetime.now()
+
+            self.energy_level -= self.parameters["Wakeup_E"]
+            if self.energy_level < 0:
+                return
+            self.get_measurements()
+
+            # call proper wakeup function
             if raw:
                 self.raw_data_wakeup()
             else:
-                self.compute_wakeup()   ## encode the frequencies for computations
+                self.compute_wakeup()
 
+            if self.energy_level < 0:
+                return
+
+            # subtract sleeping energy
             time_to_sleep = p["Wakeup_Fr"] - (datetime.datetime.now()-start).seconds
             self.energy_level -= time_to_sleep * p["Sleep_E"]
 
-            print(prev_energy - self.energy_level)
+            # record energy draw during this cycle
+            print(prev_energy - self.energy_level)  #### is this recording frequently enough? or mixing in the sleep time
             prev_energy = self.energy_level
 
 
-    # enacts sensor node wakeup mode - performs all necessary tasks
+    # Simulates sensor wakeup where it performs computations
     def compute_wakeup(self):
-
-        self.energy_level -= self.parameters["Wakeup_E"]
-        if self.energy_level < 0:
-            return
-        self.get_measurements()
 
         # perform and record computations
         data = ''
         for func in self.functions:
 
-            ### write data to file to send to lua
-            file = open("input.txt", "w")    ###### reserved filename
+            # write data to file to send to lua
+            file = open("input.txt", "w")
             input_vars = self.functions[func] # vars to be inputted to function
 
-            for var in input_vars:
+            # write compution instructions to luaRunner.lua
+            luaRunner = open("luaRunner.lua", "w")
+            luaRunner.write("local lib = require('processing')\n")
+            luaRunner.write("local arrs = lib.lines_from('input.txt')\n")
+            luaRunner.write("-------------------\n")  # recorded at this point
+            luaRunner.write("lib." + func + "(")
+
+            for counter, var in enumerate(input_vars):
                 datapoints = self.data[var][0]
+
                 for i in range(len(datapoints)):
                     file.write(str(datapoints[i]))
-
                     if i != len(datapoints)-1:
                         file.write(", ")
                 file.write("\n")
-            file.close()
 
-            #### write to luaRunner.lua
-            luaRunner = open("luaRunner.lua", "w")
-            luaRunner.write("local lib = require('processing1')\n")
-            luaRunner.write("local arrs = lib.lines_from('input.txt')\n")
-            luaRunner.write("-------------------\n")  # recorded at this point
-            luaRunner.write("lib.mean(arrs[1])")   ##### put function name here
+                luaRunner.write("arrs[" + str(counter+1) + "]")
+                if counter != len(input_vars) - 1:
+                    luaRunner.write(", ")
+
+            file.close()
+            luaRunner.write(")")
             luaRunner.close()
+
 
             # https://stackoverflow.com/questions/30841738/run-lua-script-from-python
             executable = os.getcwd() + '/mylua'
-            #output = subprocess.run([executable, 'processing1.lua', '-e', 'calc_mean()'], capture_output=True)
             output = subprocess.run([executable, 'luaRunner.lua'], capture_output=True)
             result = output.stdout.decode()   ## encoding from which to decode?
 
-            #### probably including data reading instructions
-
-            ## subtract function energy!! -- 0.2 A per instruction (roughly)
+            ## subtract function energy -- 0.2 A per instruction (roughly)
             # from Instruction level + OS profiling for energy exposed software
-            self.energy_level -= 0.2*int(result.split()[2])  ###### index (whether runner prints)
+            self.energy_level -= 0.2*int(result.split()[2])  ###### index (whether runner prints results)
 
-            data += str(func) + '\n'   ### find a way to name the functions
+            data += str(func) + '\n'
             data += result.strip() + '\n\n'
 
-        self._send_data(data)
+        self._send_data(data)   ### can I use length of input.txt file?
 
 
+    # Simulates sensor wakeup where it only collects raw data and sends
+    # back to access point if necessary
     def raw_data_wakeup(self):
-
-        self.energy_level -= self.parameters["Wakeup_E"]
-        if self.energy_level < 0:
-            return
-        self.get_measurements()
 
         # check if it's time to send data
         self.since_last_sent += 1
@@ -157,6 +166,7 @@ class SensorNode:
             self._send_data(data)
 
 
+    # Measures all variables to be measured at current timestep
     def get_measurements(self):
 
         b = self.parameters["Bufferlen"]
@@ -175,24 +185,16 @@ class SensorNode:
 
                 self.energy_level -= var.energyUsage
 
-        #print(self.cycle)
-        #for var in self.data:
-        #    print(var, self.data[var])
-        #print()
-
         self.cycle = (self.cycle + 1) % self.cycle_max
 
 
+    # Simulates sending data back to access point
     def _send_data(self, data):
 
         p = self.parameters
-
         self.energy_level -= p["Radio_E"] # turning radio on/off (not tcp)
 
         if self.energy_level < 0:  ## location isn't consistent
             return
-
-        #print("\nSENDING DATA")
-        #print(data)
 
         self.energy_level -= p["Packet_E"] * 2 * (len(data) / p["Bandwidth"])  #### math - use packet_f instead of 2
