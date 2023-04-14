@@ -5,7 +5,6 @@
 
 import numpy as np
 import subprocess
-import datetime
 import random
 import math
 import os
@@ -24,6 +23,13 @@ class Variable:
         return random.random() * self.rng + self.rangeMin
 
 
+class ComputeFunction:
+    def __init__(self, inputs, freq):
+        self.inputs = inputs
+        self.load_inst = -1
+        self.freq = freq
+
+
 class SensorNode:
 
     def __init__(self, variables: dict, functions: dict, parameters: dict, raw: bool):
@@ -32,7 +38,7 @@ class SensorNode:
 
         self.variables = variables
         self.functions = functions
-        self.func_load_inst = {}
+
 
         # maps variable name to list storing current cache of data and the next
         # index to be filled
@@ -64,10 +70,9 @@ class SensorNode:
     def run_loop(self, raw):
 
         p = self.parameters
-        prev_energy = self.energy_level
 
-        while self.energy_level > 0:
-            start = datetime.datetime.now()
+        #while self.energy_level > 0:
+        for _ in range(20):
 
             self.energy_level -= self.parameters["Wakeup_E"]
             if self.energy_level < 0:
@@ -84,73 +89,98 @@ class SensorNode:
                 return
 
             # subtract sleeping energy
-            ### this is flat wrong ###
             # one second per variable? maybe? per analysis of three
-            time_to_sleep = p["Wakeup_Fr"] - (datetime.datetime.now()-start).seconds
-            self.energy_level -= time_to_sleep * p["Sleep_E"]
+            time_to_sleep = p["Wakeup_Fr"] - 1 # ~1min to wakeup -- assuming fr is in minutes
+            self.energy_level -= time_to_sleep * p["Sleep_E"] #### units????
 
             # record energy draw during this cycle
-            print(prev_energy - self.energy_level)  #### is this recording frequently enough? or mixing in the sleep time
-            prev_energy = self.energy_level
+            print(self.energy_level)
 
 
     # Simulates sensor wakeup where it performs computations
     def compute_wakeup(self):
 
-        # perform and record computations
         data = ''
         for func in self.functions:
+            funcObj = self.functions[func]
+            ########
+            if self.cycle%(funcObj.freq // self.parameters["Wakeup_Fr"]) == 0:
 
-            # write data to file to send to lua
-            file = open("input.txt", "w")
-            input_vars = self.functions[func] # vars to be inputted to function
+                self.write_files(func)
 
-            # write compution instructions to luaRunner.lua
-            luaRunner = open("luaRunner.lua", "w")
-            luaRunner.write("local lib = require('processing')\n")
-            luaRunner.write("local arrs = lib.lines_from('input.txt')\n")
-            luaRunner.write("-------------------\n")  # recorded at this point
-            luaRunner.write("lib." + func + "(")
+                # first, count how many instructions line-retrieving function takes
+                if funcObj.load_inst == -1:
+                    self.count_load_instructions(func)
 
-            for counter, var in enumerate(input_vars):
-                datapoints = self.data[var][0]
+                # https://stackoverflow.com/questions/30841738/run-lua-script-from-python
+                executable = os.getcwd() + '/mylua'
+                output = subprocess.run([executable, 'luaRunner.lua'], capture_output=True)
+                result = output.stdout.decode()
 
-                for i in range(len(datapoints)):
-                    file.write(str(datapoints[i]))
-                    if i != len(datapoints)-1:
-                        file.write(", ")
-                file.write("\n")
+                # subtract data loading instructions
+                instructions = int(result.split()[2]) - funcObj.load_inst
 
-                luaRunner.write("arrs[" + str(counter+1) + "]")
-                if counter != len(input_vars) - 1:
-                    luaRunner.write(", ")
+                ## subtract function energy -- 0.2 A per instruction (roughly)
+                # from Instruction level + OS profiling for energy exposed software
+                self.energy_level -= 0.2*instructions  ###### index (whether runner prints results)
+                print(self.energy_level)
 
-            file.close()
-            luaRunner.write(")")
-            luaRunner.close()
+                data += str(func) + '\n'
+                data += result.strip() + '\n\n'
 
-
-            # first, count how many instructions line-retrieving function takes
-            if len(self.func_load_inst) != len(self.functions):
-                self.count_load_instructions(func)
-
-
-            # https://stackoverflow.com/questions/30841738/run-lua-script-from-python
-            executable = os.getcwd() + '/mylua'
-            output = subprocess.run([executable, 'luaRunner.lua'], capture_output=True)
-            result = output.stdout.decode()
-
-            # subtract data loading instructions
-            instructions = int(result.split()[2]) - self.func_load_inst[func]
-
-            ## subtract function energy -- 0.2 A per instruction (roughly)
-            # from Instruction level + OS profiling for energy exposed software
-            self.energy_level -= 0.2*instructions  ###### index (whether runner prints results)
-
-            data += str(func) + '\n'
-            data += result.strip() + '\n\n'
-
+        ######## when to send data
         self._send_data(data)   ### can I use length of input.txt file?
+
+
+    # writes lua runner file and data transfer file, given a function
+    def write_files(self, func):
+
+        input_vars = self.functions[func].inputs
+
+        # write data to file to send to lua
+        file = open("input.txt", "w")
+
+        # write compution instructions to luaRunner.lua
+        luaRunner = open("luaRunner.lua", "w")
+        luaRunner.write("local lib = require('processing')\n")
+        luaRunner.write("local arrs = lib.lines_from('input.txt')\n")
+        luaRunner.write("-------------------\n")  # recorded at this point
+        luaRunner.write("lib." + func + "(")
+
+        # input_vars: vars to be inputted to function
+        for counter, var in enumerate(input_vars):
+            datapoints = self.data[var][0]
+
+            for i in range(len(datapoints)):
+                file.write(str(datapoints[i]))
+                if i != len(datapoints)-1:
+                    file.write(", ")
+            file.write("\n")
+
+            luaRunner.write("arrs[" + str(counter+1) + "]")
+            if counter != len(input_vars) - 1:
+                luaRunner.write(", ")
+
+        file.close()
+        luaRunner.write(")")
+        luaRunner.close()
+
+
+    # Counts number of instructions used to load data into lua file.
+    # Records in self.func_load_inst
+    def count_load_instructions(self, func):
+
+        luaCounter = open("luaCounter.lua", "w")
+        luaCounter.write("local lib = require('processing')\n")
+        luaCounter.write("local arrs = lib.lines_from('input.txt')\n")
+        luaCounter.close()
+
+        executable = os.getcwd() + '/mylua'
+
+        instructions = subprocess.run([executable, 'luaCounter.lua'], capture_output=True)
+        result = instructions.stdout.decode().split()[2]
+
+        self.functions[func].load_inst = int(result)
 
 
     # Simulates sensor wakeup where it only collects raw data and sends
@@ -194,7 +224,7 @@ class SensorNode:
                 data_r[1] = (data_r[1] + 1) % b
 
                 self.energy_level -= var.energyUsage
-
+        print(self.energy_level)
         self.cycle = (self.cycle + 1) % self.cycle_max
 
 
@@ -208,20 +238,5 @@ class SensorNode:
             return
 
         self.energy_level -= p["Packet_E"] * 2 * (len(data) / p["Bandwidth"])  #### math - use packet_f instead of 2
+        print(self.energy_level)
 
-
-    # Counts number of instructions used to load data into lua file.
-    # Records in self.func_load_inst
-    def count_load_instructions(self, func):
-
-        luaCounter = open("luaCounter.lua", "w")
-        luaCounter.write("local lib = require('processing')\n")
-        luaCounter.write("local arrs = lib.lines_from('input.txt')\n")
-        luaCounter.close()
-
-        executable = os.getcwd() + '/mylua'
-
-        instructions = subprocess.run([executable, 'luaCounter.lua'], capture_output=True)
-        result = instructions.stdout.decode().split()[2]
-
-        self.func_load_inst[func] = int(result)
