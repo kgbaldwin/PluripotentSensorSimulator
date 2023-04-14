@@ -1,5 +1,5 @@
 import sys
-from sensor import SensorNode, Variable
+from sensor import SensorNode, Variable, ComputeFunction
 
 # Usage: python runSensor.py configsFilename.txt raw/compute
 
@@ -7,7 +7,7 @@ file = open(sys.argv[1], 'r')
 lines = file.readlines()
 
 variables = {}   # variableName: variable object
-functions = {}   # functionName: variables to be inputted
+functions = {}   # functionName: function object
 parameters = {}  # parameterName: value
 
 for line in lines:
@@ -20,7 +20,9 @@ for line in lines:
         variables[info[1].strip()] = Variable(values[0], values[1], values[2], int(values[3]))
 
     elif info[0] == "Function":
-        functions[info[1].strip()] = [var.strip() for var in info[2].split()]
+        values = info[2].split(",")
+        inputs = values[1].split()
+        functions[info[1].strip()] = ComputeFunction(inputs, int(values[0]))
 
     elif info[0] == "Bufferlen":
         parameters["Bufferlen"] = int(info[1])
