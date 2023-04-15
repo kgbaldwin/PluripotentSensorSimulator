@@ -2,20 +2,33 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-# arguments: filename of data, min wakeup frequency
+# arguments: filename of data, volt/diff
 
 file = open(sys.argv[1])
-freq = int(sys.argv[2])
+setting = sys.argv[2]
 
-values = [round(float(f), 2) for f in file.readlines()]
+#values = [round(float(f), 2) for f in file.readlines()]
+values = []
+for i, f in enumerate(file.readlines()):
+    if i % 2 == 1:
+        values.append(round(float(f), 2))
 
-diff = [round(values[x+1]-values[x], 2) for x in range(len(values)-1)]
+diff = [round(values[x]-values[x+1], 2) for x in range(len(values)-1)]
 print(diff)
 
-x = freq*np.arange(0, len(values))
+x = np.arange(0, len(values))
 
-plt.plot(x, values)
-plt.title("Sensor's Current Draw over time")
-plt.ylabel("Energy draw (mAh)")
-plt.xlabel("Minutes") # only works if matches with with freq command line argument units
+if setting == "volt":
+    plt.plot(x, values)
+    plt.ylabel("Energy draw (mAh)")
+    plt.title("Battery voltage remaining over time")
+
+elif setting == "diff":
+    plt.plot(x[:-1], diff)
+    plt.ylabel("Battery voltage remaining")
+    plt.title("Sensor's Current Draw over time")
+else:
+    print("Please enter either 'volt' or 'diff' as the second command-line argument")
+    sys.exit()
+
 plt.show()
