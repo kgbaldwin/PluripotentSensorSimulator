@@ -1,0 +1,110 @@
+after waking up
+179880.0
+after getting measurements
+179805.0
+after executing function
+179797.6
+after sending packet
+179771.5
+after sleeping
+179771.22
+after waking up
+179651.22
+after getting measurements
+179651.22
+after executing function
+179643.82
+after executing function
+179614.82
+after sending packet
+179557.22
+after sleeping
+179556.94
+after waking up
+179436.94
+after getting measurements
+179411.94
+after executing function
+179404.54
+after sending packet
+179378.44
+after sleeping
+179378.16
+after waking up
+179258.16
+after getting measurements
+179233.16
+after executing function
+179225.76
+after executing function
+179196.76
+after sending packet
+179139.16
+after sleeping
+179138.88
+after waking up
+179018.88
+after getting measurements
+178968.88
+after executing function
+178961.48
+after sending packet
+178935.38
+after sleeping
+178935.1
+after waking up
+178815.1
+after getting measurements
+178815.1
+after executing function
+178807.7
+after executing function
+178778.7
+after sending packet
+178721.1
+after sleeping
+178720.82
+after waking up
+178600.82
+after getting measurements
+178550.82
+after executing function
+178543.42
+after sending packet
+178517.32
+after sleeping
+178517.04
+after waking up
+178397.04
+after getting measurements
+178397.04
+after executing function
+178389.64
+after executing function
+178360.64
+after sending packet
+178303.04
+after sleeping
+178302.76
+after waking up
+178182.76
+after getting measurements
+178132.76
+after executing function
+178125.36000000002
+after sending packet
+178099.26
+after sleeping
+178098.98
+after waking up
+177978.98
+after getting measurements
+177953.98
+after executing function
+177946.58000000002
+after executing function
+177917.58000000002
+after sending packet
+177859.98
+after sleeping
+177859.7

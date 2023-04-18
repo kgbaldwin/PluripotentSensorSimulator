@@ -20,12 +20,12 @@ x = np.arange(0, len(values))
 
 if setting == "volt":
     plt.plot(x, values)
-    plt.ylabel("Energy draw (mAh)")
+    plt.ylabel("Battery voltage remaining")
     plt.title("Battery voltage remaining over time")
 
 elif setting == "diff":
     plt.plot(x[:-1], diff)
-    plt.ylabel("Battery voltage remaining")
+    plt.ylabel("Energy draw (mAh)")
     plt.title("Sensor's Current Draw over time")
 else:
     print("Please enter either 'volt' or 'diff' as the second command-line argument")

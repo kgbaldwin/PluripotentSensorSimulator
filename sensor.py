@@ -72,9 +72,14 @@ class SensorNode:
         p = self.parameters
 
         #while self.energy_level > 0:
-        for _ in range(20):
+        for _ in range(10):
 
-            self.energy_level -= self.parameters["Wakeup_E"]
+            self.energy_level -= p["Wakeup_E"]
+            self.energy_level -= p["Radio_E"] # turning radio on
+
+            print("after waking up")
+            print(self.energy_level)
+
             if self.energy_level < 0:
                 return
             self.get_measurements()
@@ -94,6 +99,7 @@ class SensorNode:
             self.energy_level -= time_to_sleep * p["Sleep_E"] #### units????
 
             # record energy draw during this cycle
+            print("after sleeping")
             print(self.energy_level)
 
 
@@ -123,6 +129,7 @@ class SensorNode:
                 ## subtract function energy -- 0.2 A per instruction (roughly)
                 # from Instruction level + OS profiling for energy exposed software
                 self.energy_level -= 0.2*instructions  ###### index (whether runner prints results)
+                print("after executing function")
                 print(self.energy_level)
 
                 data += str(func) + '\n'
@@ -189,7 +196,7 @@ class SensorNode:
 
         # check if it's time to send data
         self.since_last_sent += 1
-        if self.since_last_sent == self.send_freq-1:
+        if self.since_last_sent == self.send_freq:
             self.since_last_sent = 0
 
             # accumulate message containing all data
@@ -197,9 +204,9 @@ class SensorNode:
             for item in self.variables:
                 data += item + '\n'
                 data_arr = self.data[item][0]
-                self.data[item][1] = 0
+                self.data[item][1] = 0  # reset current index
                 for i in range(len(data_arr)):
-                    data += str(data_arr[i]) + '\n'
+                    data += str(round(data_arr[i],2)) + '\n'
                     data_arr[i] = 0
                 data += '\n'
 
@@ -224,19 +231,22 @@ class SensorNode:
                 data_r[1] = (data_r[1] + 1) % b
 
                 self.energy_level -= var.energyUsage
-        print(self.energy_level)
+
         self.cycle = (self.cycle + 1) % self.cycle_max
+
+        print("after getting measurements")
+        print(self.energy_level)
 
 
     # Simulates sending data back to access point
     def _send_data(self, data):
 
         p = self.parameters
-        self.energy_level -= p["Radio_E"] # turning radio on/off (not tcp)
 
         if self.energy_level < 0:  ## location isn't consistent
             return
 
-        self.energy_level -= p["Packet_E"] * 2 * (len(data) / p["Bandwidth"])  #### math - use packet_f instead of 2
+        self.energy_level -= p["Packet_E"] * (len(data) / p["Bandwidth"])  #### ** was 2 ** math - use packet_f instead of 2
+        print("after sending packet")
         print(self.energy_level)
 
