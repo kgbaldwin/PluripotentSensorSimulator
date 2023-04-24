@@ -24,10 +24,11 @@ class Variable:
 
 
 class ComputeFunction:
-    def __init__(self, inputs, freq):
+    def __init__(self, inputs, freq, cache_len):
         self.inputs = inputs
         self.load_inst = -1
         self.freq = freq
+        self.cache = np.zeros(cache_len)
 
 
 class SensorNode:
@@ -43,6 +44,7 @@ class SensorNode:
         # maps variable name to list storing current cache of data and the next
         # index to be filled
         self.data = {}
+
         cycle_max = 1
         min_freq = np.inf
 
@@ -72,7 +74,7 @@ class SensorNode:
         p = self.parameters
 
         #while self.energy_level > 0:
-        for _ in range(10):
+        for _ in range(2*self.cycle_max):
 
             self.energy_level -= p["Wakeup_E"]
             self.energy_level -= p["Radio_E"] # turning radio on
@@ -101,6 +103,8 @@ class SensorNode:
             # record energy draw during this cycle
             print("after sleeping")
             print(self.energy_level)
+
+        print("ENERGY:", round(float(p["Energy"])-self.energy_level, 2), "per", 2*p["Wakeup_Fr"]*self.cycle_max, "[units]")
 
 
     # Simulates sensor wakeup where it performs computations
@@ -246,7 +250,7 @@ class SensorNode:
         if self.energy_level < 0:  ## location isn't consistent
             return
 
-        self.energy_level -= p["Packet_E"] * (len(data) / p["Bandwidth"])  #### ** was 2 ** math - use packet_f instead of 2
+        self.energy_level -= p["Packet_E"] * (len(data) / p["Bandwidth"])  #### ** was 2 ** math ????
         print("after sending packet")
         print(self.energy_level)
 

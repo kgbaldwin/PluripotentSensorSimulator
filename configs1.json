@@ -1,0 +1,37 @@
+ {
+    "variables": [
+        {"name": "temp",
+        "rangeMin": -20,
+        "rangeMax": 100,
+        "measureEnergy": 25,
+        "measureFrequency": 60,
+        "measureUnit": "m"},
+
+        {"name": "light",
+        "rangeMin": 0,
+        "rangeMax": 5,
+        "measureEnergy": 25,
+        "measureFrequency": 30,
+        "measureUnit": "m"}
+    ],
+    "functions": [
+        {"name": "mean",
+        "measureFrequency": 15,
+        "cacheLen": 5,
+        "inputs": ["temp"]},
+
+        {"name": "covariance",
+        "measureFrequency": 30,
+        "cacheLen": 5,
+        "inputs": ["temp", "light"]}
+    ],
+    "Energy": 1500,
+    "Bandwidth": 50,
+    "Bufferlen": 5,
+    "Wakeup_Fr": 15,
+    "Packet_Fr": 0.5,
+    "Wakeup_E": 60,
+    "Packet_E": 45,
+    "Sleep_E": 0.02,
+    "Radio_E": 60
+ }

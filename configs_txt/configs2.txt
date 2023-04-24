@@ -1,0 +1,12 @@
+Variable: temp: -20, 100, 25
+Variable: light: 0, 5, 25
+Variable: other: 20, 80, 25
+Energy: 180000
+Bandwidth: 50
+Bufferlen: 5
+Wakeup_Fr: 15
+Packet_Fr: 1
+Wakeup_E: 60
+Packet_E: 45
+Sleep_E: 0.01 #
+Radio_E: 60
