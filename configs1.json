@@ -1,35 +1,43 @@
  {
     "variables": [
         {"name": "temp",
-        "rangeMin": -20,
-        "rangeMax": 100,
-        "measureEnergy": 25,
-        "measureFrequency": 60,
-        "measureUnit": "m"},
+        "range_min": -20,
+        "range_max": 100,
+        "measure_E": 25,
+        "measure_freq": 60,
+        "measure_unit": "m"},
 
         {"name": "light",
-        "rangeMin": 0,
-        "rangeMax": 5,
-        "measureEnergy": 25,
-        "measureFrequency": 30,
-        "measureUnit": "m"}
+        "range_min": 0,
+        "range_max": 5,
+        "measure_E": 25,
+        "measure_freq": 30,
+        "measure_unit": "m"}
     ],
+
     "functions": [
         {"name": "mean",
-        "measureFrequency": 15,
-        "cacheLen": 5,
+        "measure_freq": 15,
+        "measure_unit": "m",
+        "cache_len": 5,
         "inputs": ["temp"]},
 
         {"name": "covariance",
-        "measureFrequency": 30,
-        "cacheLen": 5,
+        "measure_freq": 30,
+        "measure_unit": "m",
+        "cache_len": 5,
         "inputs": ["temp", "light"]}
     ],
+
     "Energy": 1500,
     "Bandwidth": 50,
     "Bufferlen": 5,
-    "Wakeup_Fr": 15,
-    "Packet_Fr": 0.5,
+    "Packet_freq": 0.5,
+
+    "Wakeup_freq": 15,
+    "Wakeup_len": 3,
+    "Wakeup_unit": "s",
+
     "Wakeup_E": 60,
     "Packet_E": 45,
     "Sleep_E": 0.02,

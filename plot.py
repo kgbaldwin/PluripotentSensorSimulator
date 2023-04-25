@@ -11,7 +11,7 @@ setting = sys.argv[2]
 values = []
 for i, f in enumerate(file.readlines()):
     if i % 2 == 1:
-        values.append(round(float(f), 2))
+        values.append(round(float(f)/3600, 2))  # convert back to hours
 
 diff = [round(values[x]-values[x+1], 2) for x in range(len(values)-1)]
 print(diff)
@@ -20,7 +20,7 @@ x = np.arange(0, len(values))
 
 if setting == "volt":
     plt.plot(x, values)
-    plt.ylabel("Battery voltage remaining")
+    plt.ylabel("Battery voltage remaining (mAh)")
     plt.title("Battery voltage remaining over time")
 
 elif setting == "diff":

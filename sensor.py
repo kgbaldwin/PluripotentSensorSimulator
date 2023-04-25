@@ -34,15 +34,15 @@ class ComputeFunction:
 class SensorNode:
 
     def __init__(self, variables: dict, functions: dict, parameters: dict, raw: bool):
-        self.energy_level = parameters["Energy"]
+        self.energy_level = parameters["Energy"]*3600 # given in mAh, convert to "mAs"
         self.parameters = parameters  ## units for bandwidth??
 
         self.variables = variables
         self.functions = functions
 
 
-        # maps variable name to list storing current cache of data and the next
-        # index to be filled
+        # maps variable name to list storing current cache of data and
+        # the next index to be filled
         self.data = {}
 
         cycle_max = 1
@@ -54,14 +54,14 @@ class SensorNode:
                 min_freq = item.freq
                 # undetermined behavior when frequencies aren't a multiple of wakeup_freq
 
-            num = int(item.freq // parameters["Wakeup_Fr"])
+            num = int(item.freq // parameters["Wakeup_freq"])
             if cycle_max % num != 0:
                 cycle_max = math.lcm(cycle_max, num)
 
         self.cycle = 0
         self.cycle_max = cycle_max
 
-        self.send_freq = int((min_freq/parameters["Wakeup_Fr"])*parameters["Bufferlen"])
+        self.send_freq = int((min_freq/parameters["Wakeup_freq"])*parameters["Bufferlen"])
         self.since_last_sent = 0
 
         self.run_loop(raw)
@@ -73,17 +73,18 @@ class SensorNode:
 
         p = self.parameters
 
-        #while self.energy_level > 0:
         for _ in range(2*self.cycle_max):
-
-            self.energy_level -= p["Wakeup_E"]
-            self.energy_level -= p["Radio_E"] # turning radio on
-
-            print("after waking up")
-            print(self.energy_level)
 
             if self.energy_level < 0:
                 return
+
+            # estimating each of these actions take ~1/5 s
+            self.energy_level -= p["Wakeup_E"]/6
+            self.energy_level -= p["Radio_E"]/6  # turning radio on
+
+            print("after waking up")
+            print(round(self.energy_level, 4))
+
             self.get_measurements()
 
             # call proper wakeup function
@@ -92,19 +93,19 @@ class SensorNode:
             else:
                 self.compute_wakeup()
 
-            if self.energy_level < 0:
-                return
-
             # subtract sleeping energy
-            # one second per variable? maybe? per analysis of three
-            time_to_sleep = p["Wakeup_Fr"] - 1 # ~1min to wakeup -- assuming fr is in minutes
-            self.energy_level -= time_to_sleep * p["Sleep_E"] #### units????
+            time_to_sleep = p["Wakeup_freq"] - p["Wakeup_len"]
+            self.energy_level -= time_to_sleep * p["Sleep_E"]
 
             # record energy draw during this cycle
             print("after sleeping")
-            print(self.energy_level)
+            print(round(self.energy_level, 4))
 
-        print("ENERGY:", round(float(p["Energy"])-self.energy_level, 2), "per", 2*p["Wakeup_Fr"]*self.cycle_max, "[units]")
+
+        energy_used = round(float(p["Energy"]*3600)-self.energy_level, 2)
+        time_elapsed = 2 * p["Wakeup_freq"] * self.cycle_max / 3600
+
+        print("ENERGY:", energy_used, "per",  time_elapsed, "hrs")
 
 
     # Simulates sensor wakeup where it performs computations
@@ -114,7 +115,7 @@ class SensorNode:
         for func in self.functions:
             funcObj = self.functions[func]
             ########
-            if self.cycle%(funcObj.freq // self.parameters["Wakeup_Fr"]) == 0:
+            if self.cycle%(funcObj.freq // self.parameters["Wakeup_freq"]) == 0:
 
                 self.write_files(func)
 
@@ -134,13 +135,14 @@ class SensorNode:
                 # from Instruction level + OS profiling for energy exposed software
                 self.energy_level -= 0.2*instructions  ###### index (whether runner prints results)
                 print("after executing function")
-                print(self.energy_level)
+                print(round(self.energy_level, 4))
 
                 data += str(func) + '\n'
                 data += result.strip() + '\n\n'
 
         ######## when to send data
         self._send_data(data)   ### can I use length of input.txt file?
+
 
 
     # writes lua runner file and data transfer file, given a function
@@ -210,7 +212,7 @@ class SensorNode:
                 data_arr = self.data[item][0]
                 self.data[item][1] = 0  # reset current index
                 for i in range(len(data_arr)):
-                    data += str(round(data_arr[i],2)) + '\n'
+                    data += str(round(data_arr[i], 2)) + '\n'
                     data_arr[i] = 0
                 data += '\n'
 
@@ -221,7 +223,7 @@ class SensorNode:
     def get_measurements(self):
 
         b = self.parameters["Bufferlen"]
-        f = self.parameters["Wakeup_Fr"]
+        f = self.parameters["Wakeup_freq"]
 
         for name, var in self.variables.items():
 
@@ -239,7 +241,7 @@ class SensorNode:
         self.cycle = (self.cycle + 1) % self.cycle_max
 
         print("after getting measurements")
-        print(self.energy_level)
+        print(round(self.energy_level, 4))
 
 
     # Simulates sending data back to access point
@@ -247,10 +249,7 @@ class SensorNode:
 
         p = self.parameters
 
-        if self.energy_level < 0:  ## location isn't consistent
-            return
-
         self.energy_level -= p["Packet_E"] * (len(data) / p["Bandwidth"])  #### ** was 2 ** math ????
         print("after sending packet")
-        print(self.energy_level)
+        print(round(self.energy_level, 4))
 
