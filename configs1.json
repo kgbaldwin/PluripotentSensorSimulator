@@ -32,12 +32,12 @@
     "Energy": 1500,
     "Bandwidth": 50,
     "Bufferlen": 5,
-    "Packet_freq": 0.5,
 
     "Wakeup_freq": 15,
     "Wakeup_len": 3,
     "Wakeup_unit": "s",
 
+    "Packet_freq": 0.5,
     "Wakeup_E": 60,
     "Packet_E": 45,
     "Sleep_E": 0.02,

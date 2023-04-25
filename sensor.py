@@ -33,18 +33,20 @@ class ComputeFunction:
 
 class SensorNode:
 
-    def __init__(self, variables: dict, functions: dict, parameters: dict, raw: bool):
-        self.energy_level = parameters["Energy"]*3600 # given in mAh, convert to "mAs"
-        self.parameters = parameters  ## units for bandwidth??
+    def __init__(self, variables: dict, functions: dict, parameters: dict, raw: bool, cycles: int):
+        self.energy_level = parameters["Energy"] # given in mAh, convert to "mAs"
+        print("inital energy level")
+        print(self.energy_level)
 
+        self.parameters = parameters  ## units for bandwidth??
         self.variables = variables
         self.functions = functions
-
 
         # maps variable name to list storing current cache of data and
         # the next index to be filled
         self.data = {}
 
+        self.num_cycles = cycles
         cycle_max = 1
         min_freq = np.inf
 
@@ -73,12 +75,12 @@ class SensorNode:
 
         p = self.parameters
 
-        for _ in range(2*self.cycle_max):
+        for _ in range(self.num_cycles * self.cycle_max):
 
             if self.energy_level < 0:
                 return
 
-            # estimating each of these actions take ~1/5 s
+            # estimating each of these actions take ~1/6 s
             self.energy_level -= p["Wakeup_E"]/6
             self.energy_level -= p["Radio_E"]/6  # turning radio on
 
@@ -101,11 +103,7 @@ class SensorNode:
             print("after sleeping")
             print(round(self.energy_level, 4))
 
-
-        energy_used = round(float(p["Energy"]*3600)-self.energy_level, 2)
-        time_elapsed = 2 * p["Wakeup_freq"] * self.cycle_max / 3600
-
-        print("ENERGY:", energy_used, "per",  time_elapsed, "hrs")
+        self.lifetime_stats()
 
 
     # Simulates sensor wakeup where it performs computations
@@ -119,7 +117,7 @@ class SensorNode:
 
                 self.write_files(func)
 
-                # first, count how many instructions line-retrieving function takes
+                # first, count how many instructions line-retrieving for function takes
                 if funcObj.load_inst == -1:
                     self.count_load_instructions(func)
 
@@ -129,19 +127,20 @@ class SensorNode:
                 result = output.stdout.decode()
 
                 # subtract data loading instructions
-                instructions = int(result.split()[2]) - funcObj.load_inst
+                instructions = int(result.split()[3]) - funcObj.load_inst
 
-                ## subtract function energy -- 0.2 A per instruction (roughly)
+                # subtract function energy -- 0.2 A per instruction (roughly)
                 # from Instruction level + OS profiling for energy exposed software
-                self.energy_level -= 0.2*instructions  ###### index (whether runner prints results)
+                self.energy_level -= 0.2 * instructions  ###### index (whether runner prints results)
                 print("after executing function")
                 print(round(self.energy_level, 4))
 
                 data += str(func) + '\n'
-                data += result.strip() + '\n\n'
+                data += result.split()[0] + '\n\n'
 
         ######## when to send data
-        self._send_data(data)   ### can I use length of input.txt file?
+        if len(data) > 0:
+            self._send_data(data)   ### can I use length of input.txt file?
 
 
 
@@ -158,7 +157,7 @@ class SensorNode:
         luaRunner.write("local lib = require('processing')\n")
         luaRunner.write("local arrs = lib.lines_from('input.txt')\n")
         luaRunner.write("-------------------\n")  # recorded at this point
-        luaRunner.write("lib." + func + "(")
+        luaRunner.write("print(lib." + func + "(")
 
         # input_vars: vars to be inputted to function
         for counter, var in enumerate(input_vars):
@@ -175,7 +174,7 @@ class SensorNode:
                 luaRunner.write(", ")
 
         file.close()
-        luaRunner.write(")")
+        luaRunner.write("))")
         luaRunner.close()
 
 
@@ -249,7 +248,24 @@ class SensorNode:
 
         p = self.parameters
 
-        self.energy_level -= p["Packet_E"] * (len(data) / p["Bandwidth"])  #### ** was 2 ** math ????
+        self.energy_level -= p["Packet_E"] * math.ceil(len(data) / p["Bandwidth"])  #### ** was 2 ** math ????
         print("after sending packet")
         print(round(self.energy_level, 4))
+
+
+    # after simulation stops, calculates energy used during simulation
+    # and total expected battery life
+    def lifetime_stats(self):
+        p = self.parameters
+
+        energy_used = round(float(p["Energy"])-self.energy_level, 2)
+        time_elapsed = self.num_cycles * p["Wakeup_freq"] * self.cycle_max / 3600
+
+        print()
+        print("Energy:", energy_used, "mAh per",  time_elapsed, "hrs")
+
+        e_per_hr = energy_used/self.num_cycles
+        hrs = p["Energy"]/e_per_hr
+
+        print("Expected battery life:", round(hrs/24/30.4), "months")
 

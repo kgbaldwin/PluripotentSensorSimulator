@@ -1,13 +1,10 @@
--- https://stackoverflow.com/questions/40928887/how-to-use-multiple-files-in-lua
 local M = {}
 
--- https://stackoverflow.com/questions/11201262/how-to-read-data-from-a-file-in-lua
 function M.lines_from(file)
     local lines = {}
     for line in io.lines(file) do
 
         arr = {}
-        -- https://www.ibm.com/docs/en/db2-warehouse?topic=manipulation-stringgmatch-s-pattern
         for num in string.gmatch(line, "[%d.]+") do
             arr[#arr + 1] = tonumber(num)
         end
@@ -18,7 +15,6 @@ function M.lines_from(file)
 end
 
 
--- first 5 avg values are wrong because dividing by 5 ????
 function M.mean(arr)
     sum = 0
     for i=1, #arr do
@@ -42,9 +38,3 @@ end
 
 
 return M
-
--- some for running "require" (4)
--- one to open, one for creating/returning M, 2 per function
--- with one function: 8
-
--- without calc_ functions: 12 total to require
