@@ -32,7 +32,6 @@ for label, item in settings.items():
         for func in item:
             inputs = func["inputs"]
             m_freq = func["measure_freq"]
-            cache_len = func["cache_len"]
 
             m_unit = func["measure_unit"]
             # convert to seconds
@@ -41,7 +40,7 @@ for label, item in settings.items():
             if m_unit == "h":
                 m_freq *= 3600
 
-            functions[func["name"]] = ComputeFunction(inputs, m_freq, cache_len)
+            functions[func["name"]] = ComputeFunction(inputs, m_freq)
 
     else:
         parameters[label] = item

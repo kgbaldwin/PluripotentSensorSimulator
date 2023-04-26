@@ -17,23 +17,22 @@
 
     "functions": [
         {"name": "mean",
-        "measure_freq": 15,
-        "measure_unit": "m",
-        "cache_len": 5,
+        "measure_freq": 3,
+        "measure_unit": "h",
         "inputs": ["temp"]},
 
         {"name": "covariance",
-        "measure_freq": 30,
-        "measure_unit": "m",
-        "cache_len": 5,
+        "measure_freq": 1,
+        "measure_unit": "h",
         "inputs": ["temp", "light"]}
     ],
 
     "Energy": 1500,
     "Bandwidth": 50,
-    "Bufferlen": 5,
+    "Raw_cache": 8,
+    "Compute_cache": 4,
 
-    "Wakeup_freq": 15,
+    "Wakeup_freq": 900,
     "Wakeup_len": 3,
     "Wakeup_unit": "s",
 
