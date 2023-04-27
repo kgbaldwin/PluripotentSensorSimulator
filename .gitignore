@@ -3,3 +3,5 @@ outputs/*
 luaRunner.lua
 luaCounter.lua
 input.txt
+notes/*
+out_apr26/*
