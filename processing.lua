@@ -27,7 +27,7 @@ end
 function M.covariance(arr1, arr2)
     mean1 = M.mean(arr1)
     mean2 = M.mean(arr2)
-    -- assert arrays are same length
+
     sum = 0
     for i=1, #arr1 do
         sum = sum + (arr1[i]-mean1)*(arr2[i]-mean2)

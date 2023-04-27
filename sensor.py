@@ -55,8 +55,8 @@ class SensorNode:
             self.raw_data[name] = [np.zeros(parameters["Raw_cache"]), 0]
             if min_freq > item.freq:
                 min_freq = item.freq
-                # undetermined behavior when frequencies aren't a multiple of wakeup_freq
 
+            # undetermined behavior when frequencies aren't a multiple of wakeup_freq
             num = int(item.freq // parameters["Wakeup_freq"])
             if cycle_max % num != 0:
                 cycle_max = math.lcm(cycle_max, num)
@@ -67,7 +67,7 @@ class SensorNode:
             # frequencies of functions
             for name, item in self.functions.items():
                 self.computed_data[name] = [np.zeros(parameters["Compute_cache"]), 0]
-                # undetermined behavior when frequencies aren't a multiple of Wakeup_freq
+
                 if min_freq > item.freq:
                     min_freq = item.freq
 
@@ -90,8 +90,8 @@ class SensorNode:
 
         p = self.parameters
 
-        for _ in range(self.num_cycles * self.cycle_max):
-        #for _ in range(self.num_cycles * self.send_freq):
+        #for _ in range(self.num_cycles * self.cycle_max):
+        for _ in range(self.num_cycles * self.send_freq):
 
             if self.energy_level < 0:
                 return
@@ -102,8 +102,8 @@ class SensorNode:
             self.curr_t += 1/3
 
             print("after waking up")
-            print(round(self.energy_level, 4))
-            #print(round(self.energy_level, 4), self.curr_t)
+            #print(round(self.energy_level, 4))
+            print(round(self.energy_level, 4), round(self.curr_t, 2))
 
             self.get_measurements()
 
@@ -121,8 +121,8 @@ class SensorNode:
 
             # record energy draw during this cycle
             print("after sleeping")
-            print(round(self.energy_level, 4))
-            #print(round(self.energy_level, 4), self.curr_t)
+            # print(round(self.energy_level, 4))
+            print(round(self.energy_level, 4), round(self.curr_t, 2))
 
         self.lifetime_stats()
 
@@ -151,8 +151,9 @@ class SensorNode:
                 # subtract function energy -- 0.2 A per instruction (roughly)
                 # from Instruction level + OS profiling for energy exposed software
                 self.energy_level -= 0.2 * instructions / 8
+                self.curr_t += 1   ## assume 1 second for function execution
                 print("after executing function")
-                print(round(self.energy_level, 4))
+                print(round(self.energy_level, 4), round(self.curr_t, 2))
 
                 data_c = self.computed_data[func]
 
@@ -274,8 +275,10 @@ class SensorNode:
 
         self.cycle = (self.cycle + 1) % self.cycle_max
 
+        self.curr_t += len(self.variables)
+
         print("after getting measurements")
-        print(round(self.energy_level, 4))
+        print(round(self.energy_level, 4), round(self.curr_t, 2))
 
 
     # Simulates sending data back to access point
@@ -285,7 +288,8 @@ class SensorNode:
 
         self.energy_level -= p["Packet_E"] * math.ceil(len(data) / p["Bandwidth"])  #### ** was 2 ** math ????
         print("after sending packet")
-        print(round(self.energy_level, 4))
+        self.curr_t += math.ceil(len(data) / p["Bandwidth"])
+        print(round(self.energy_level, 4), round(self.curr_t, 2))
 
 
     # after simulation stops, calculates energy used during simulation

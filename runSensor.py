@@ -56,6 +56,9 @@ parameters["Energy"] *= 3600
 raw = (sys.argv[2]=="raw")
 
 cycles = int(sys.argv[3])
+if cycles < 1:
+    print("Please enter a value for cycles greater than or equal to 1!")
+    sys.exit()
 
 sensor1 = SensorNode(variables, functions, parameters, raw, cycles)
 

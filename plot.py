@@ -17,28 +17,46 @@ print(final_energy)
 print(battery_life)
 
 values = []
+t_vals = []
 for i, f in enumerate(lines):
     if i % 2 == 1:
-        values.append(round(float(f), 2))  # convert back to hours
+        if len(f.split()) == 1:
+            values.append(round(float(f), 2))
+        else:
+            values.append(round(float(f.split()[0]), 2))
+            t_vals.append(round(float(f.split()[1])/60, 2))
 
 diff = [round(values[x]-values[x+1], 2) for x in range(len(values)-1)]
 print(diff)
 
 x = np.arange(0, len(values))
 
-if setting == "volt":
-    plt.plot(x, values)
-    plt.ylabel("Battery voltage remaining (mAh)")
-    plt.title("Battery voltage remaining")
-
-elif setting == "diff":
-    plt.plot(x[:-1], diff)
-    plt.ylabel("Energy used (mAh)")
-    plt.title("Sensor's Current Usage")
-else:
+if not (setting == "volt" or setting == "diff"):
     print("Please enter either 'volt' or 'diff' as the second command-line argument")
     sys.exit()
 
-plt.xlabel("Num actions executed")
+
+if setting == "volt":
+    if len(t_vals) == 0:
+        plt.plot(x, values)
+    else:
+        plt.plot(t_vals, values)
+    plt.ylabel("Battery voltage remaining (mAh)")
+    plt.title("Battery voltage remaining")
+
+else:   # setting == "diff"
+    if len(t_vals) == 0:
+        plt.plot(x[:-1], diff, 'o')
+    else:
+        plt.plot(t_vals, diff, 'o')
+    plt.grid(True)
+    plt.ylabel("Energy used (mAh)")
+    plt.title("Sensor's Current Usage")
+
+
+if len(t_vals) == 0:
+    plt.xlabel("Num actions executed")
+else:
+    plt.xlabel("Minutes")
 plt.ticklabel_format(useOffset=False)
 plt.show()
