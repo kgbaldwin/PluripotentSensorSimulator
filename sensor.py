@@ -90,7 +90,6 @@ class SensorNode:
 
         p = self.parameters
 
-        #for _ in range(self.num_cycles * self.cycle_max):
         for _ in range(self.num_cycles * self.send_freq):
 
             if self.energy_level < 0:
@@ -98,11 +97,9 @@ class SensorNode:
 
             # estimating each of these actions take ~1/6 s
             self.energy_level -= p["Wakeup_E"]/6
-            self.energy_level -= p["Radio_E"]/6  # turning radio on
-            self.curr_t += 1/3
+            self.curr_t += 1/6
 
             print("after waking up")
-            #print(round(self.energy_level, 4))
             print(round(self.energy_level, 4), round(self.curr_t, 2))
 
             self.get_measurements()
@@ -148,9 +145,8 @@ class SensorNode:
                 # subtract data loading instructions
                 instructions = int(result.split()[3]) - funcObj.load_inst
 
-                # subtract function energy -- 0.2 A per instruction (roughly)
-                # from Instruction level + OS profiling for energy exposed software
-                self.energy_level -= 0.2 * instructions / 8
+                # subtract function energy
+                self.energy_level -= self.parameters["Processor_E"] * instructions / 10000
                 self.curr_t += 1   ## assume 1 second for function execution
                 print("after executing function")
                 print(round(self.energy_level, 4), round(self.curr_t, 2))
@@ -285,6 +281,8 @@ class SensorNode:
     def _send_data(self, data):
 
         p = self.parameters
+        self.energy_level -= p["Radio_E"]/6  # turning radio on
+        self.curr_t += 1/6
 
         self.energy_level -= p["Packet_E"] * math.ceil(len(data) / p["Bandwidth"])  #### ** was 2 ** math ????
         print("after sending packet")
