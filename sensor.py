@@ -34,10 +34,10 @@ class SensorNode:
     def __init__(self, variables: dict, functions: dict, parameters: dict, raw: bool, cycles: int):
         self.energy_level = parameters["Energy"] # given in "mAs"
         print("inital energy level")
-        print(self.energy_level)
+        print(self.energy_level, "0")
         self.curr_t = 0
 
-        self.parameters = parameters  ## units for bandwidth??
+        self.parameters = parameters
         self.variables = variables
         self.functions = functions
 
@@ -95,12 +95,12 @@ class SensorNode:
             if self.energy_level < 0:
                 return
 
-            # estimating each of these actions take ~1/6 s
+            # estimating this takes ~1/6 s
             self.energy_level -= p["Wakeup_E"]/6
             self.curr_t += 1/6
 
             print("after waking up")
-            print(round(self.energy_level, 4), round(self.curr_t, 2))
+            print(round(self.energy_level, 4), round(self.curr_t, 3))
 
             self.get_measurements()
 
@@ -118,8 +118,7 @@ class SensorNode:
 
             # record energy draw during this cycle
             print("after sleeping")
-            # print(round(self.energy_level, 4))
-            print(round(self.energy_level, 4), round(self.curr_t, 2))
+            print(round(self.energy_level, 4), round(self.curr_t, 3))
 
         self.lifetime_stats()
 
@@ -149,7 +148,7 @@ class SensorNode:
                 self.energy_level -= self.parameters["Processor_E"] * instructions / 10000
                 self.curr_t += 1   ## assume 1 second for function execution
                 print("after executing function")
-                print(round(self.energy_level, 4), round(self.curr_t, 2))
+                print(round(self.energy_level, 4), round(self.curr_t, 3))
 
                 data_c = self.computed_data[func]
 
@@ -161,18 +160,22 @@ class SensorNode:
         if self.since_last_sent == self.send_freq:
             self.since_last_sent = 0
 
-            # accumulate message containing all computed data
-            data = ''
+            # estimate number of bytes to be sent
+            num_bytes = 0
             for item in self.functions:
-                data += item + '\n'
-                data_arr = self.computed_data[item][0]
-                self.computed_data[item][1] = 0  # reset current index
-                for i in range(len(data_arr)):
-                    data += str(round(data_arr[i], 2)) + '\n'
-                    data_arr[i] = 0
-                data += '\n'
+                num_bytes += 1    # function identifier byte
 
-            self._send_data(data)
+                data_arr = self.computed_data[item][0]
+                # number of computed values that function has; 4 bytes per float
+                num_values = self.computed_data[item][1] + 1
+                num_bytes += 4 * num_values
+
+                # reset array
+                for i in range(num_values):
+                    data_arr[i] = 0
+                self.computed_data[item][1] = 0  # reset current index
+
+            self.send_data(num_bytes)
 
 
 
@@ -236,18 +239,22 @@ class SensorNode:
         if self.since_last_sent == self.send_freq:
             self.since_last_sent = 0
 
-            # accumulate message containing all data
-            data = ''
+            # count total number of bytes to be sent
+            num_bytes = 0
             for item in self.variables:
-                data += item + '\n'
-                data_arr = self.raw_data[item][0]
-                self.raw_data[item][1] = 0  # reset current index
-                for i in range(len(data_arr)):
-                    data += str(round(data_arr[i], 2)) + '\n'
-                    data_arr[i] = 0
-                data += '\n'
+                num_bytes += 1    # variable identifier byte
 
-            self._send_data(data)
+                data_arr = self.raw_data[item][0]
+                # number of raw values that cache has; 4 bytes per float
+                num_values = self.raw_data[item][1] + 1
+                num_bytes += 4 * num_values
+
+                # reset array
+                for i in range(num_values):
+                    data_arr[i] = 0
+                self.raw_data[item][1] = 0  # reset current index
+
+            self.send_data(num_bytes)
 
 
     # Measures all variables to be measured at current timestep
@@ -274,20 +281,23 @@ class SensorNode:
         self.curr_t += len(self.variables)
 
         print("after getting measurements")
-        print(round(self.energy_level, 4), round(self.curr_t, 2))
+        print(round(self.energy_level, 4), round(self.curr_t, 3))
 
 
     # Simulates sending data back to access point
-    def _send_data(self, data):
+    def send_data(self, num_bytes):
 
         p = self.parameters
         self.energy_level -= p["Radio_E"]/6  # turning radio on
-        self.curr_t += 1/6
+        self.curr_t += 1/6    # time to turn radio on
 
-        self.energy_level -= p["Packet_E"] * math.ceil(len(data) / p["Bandwidth"])  #### ** was 2 ** math ????
+        time = 1 + 0.04*num_bytes
+        self.curr_t += time
+
+        self.energy_level -= p["Sending_E"] * time
+
         print("after sending packet")
-        self.curr_t += math.ceil(len(data) / p["Bandwidth"])
-        print(round(self.energy_level, 4), round(self.curr_t, 2))
+        print(round(self.energy_level, 4), round(self.curr_t, 3))
 
 
     # after simulation stops, calculates energy used during simulation

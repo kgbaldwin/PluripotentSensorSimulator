@@ -3,29 +3,28 @@
         {"name": "temp",
         "range_min": -20,
         "range_max": 100,
-        "measure_E": 20,
+        "measure_E": 10,
         "measure_freq": 60,
         "measure_unit": "m"},
 
         {"name": "light",
         "range_min": 0,
         "range_max": 5,
-        "measure_E": 20,
+        "measure_E": 10,
         "measure_freq": 60,
         "measure_unit": "m"}
     ],
 
     "Energy": 1500,
-    "Bandwidth": 30,
     "Raw_cache": 1,
+
+    "Wakeup_E": 250,
+    "Radio_E": 200,
 
     "Wakeup_freq": 3600,
     "Wakeup_len": 3,
     "Wakeup_unit": "s",
 
-    "Packet_freq": 0.5,
-    "Wakeup_E": 250,
-    "Packet_E": 45,
-    "Sleep_E": 0.02,
-    "Radio_E": 200
+    "Sending_E": 45,
+    "Sleep_E": 0.02
  }
