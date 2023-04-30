@@ -47,6 +47,6 @@
 
     "Sending_E": 45,
     "Sleep_E": 0.02,
-    "Processor_E": 250,
+    "Processor_E": 200,
     "MIPS": 300
  }

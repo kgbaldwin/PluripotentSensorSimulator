@@ -1,0 +1,20 @@
+figure filepath: actual_graphs/
+
+command: python runSensor.py configs3paper.json raw 2 > actual_graphs/reproduction3.txt
+output filename: reproduction3.txt
+graph filename: analysis3reproduction2
+- analysis3detail2
+
+
+command: python runSensor.py configs1.json raw 2
+output filename: configs1_raw.txt
+graph filename:
+
+command: runSensor.py configs1.json compute 2
+output filename: configs1_compute.txt
+graph filename:
+
+command:
+output filename:
+graph filename:
+

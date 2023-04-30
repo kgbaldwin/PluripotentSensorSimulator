@@ -1,0 +1,21 @@
+inital energy level
+5400000 0
+after waking up
+5399958.3333 0.167
+after getting measurements
+5399938.3333 2.167
+after sending packet
+5399842.0 3.733
+after sleeping
+5399770.06 3600.733
+after waking up
+5399728.3933 3600.9
+after getting measurements
+5399708.3933 3602.9
+after sending packet
+5399612.06 3604.467
+after sleeping
+5399540.12 7201.467
+
+Energy: 229.94 mAh per hr
+Expected battery life: 32 months
