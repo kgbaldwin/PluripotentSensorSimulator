@@ -35,8 +35,8 @@
     ],
 
     "Energy": 1500,
-    "Raw_cache": 8,
-    "Compute_cache": 4,
+    "Raw_cache": 16,
+    "Compute_cache": 16,
 
     "Wakeup_E": 250,
     "Radio_E": 200,
