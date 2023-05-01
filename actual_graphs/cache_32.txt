@@ -1,0 +1,393 @@
+inital energy level
+5400000 0
+after waking up
+5399958.3333 0.167
+after getting measurements
+5399868.3333 3.167
+after sleeping
+5399850.5333 893.167
+after waking up
+5399808.8667 893.333
+after getting measurements
+5399783.8667 896.333
+after sleeping
+5399766.0667 1786.333
+after waking up
+5399724.4 1786.5
+after getting measurements
+5399674.4 1789.5
+after sleeping
+5399656.6 2679.5
+after waking up
+5399614.9333 2679.667
+after getting measurements
+5399589.9333 2682.667
+after sleeping
+5399572.1333 3572.667
+after waking up
+5399530.4667 3572.833
+after getting measurements
+5399440.4667 3575.833
+after sleeping
+5399422.6667 4465.833
+after waking up
+5399381.0 4466.0
+after getting measurements
+5399356.0 4469.0
+after sleeping
+5399338.2 5359.0
+after waking up
+5399296.5333 5359.167
+after getting measurements
+5399246.5333 5362.167
+after sleeping
+5399228.7333 6252.167
+after waking up
+5399187.0667 6252.333
+after getting measurements
+5399162.0667 6255.333
+after sleeping
+5399144.2667 7145.333
+after waking up
+5399102.6 7145.5
+after getting measurements
+5399012.6 7148.5
+after sleeping
+5398994.8 8038.5
+after waking up
+5398953.1333 8038.667
+after getting measurements
+5398928.1333 8041.667
+after sleeping
+5398910.3333 8931.667
+after waking up
+5398868.6667 8931.833
+after getting measurements
+5398818.6667 8934.833
+after sleeping
+5398800.8667 9824.833
+after waking up
+5398759.2 9825.0
+after getting measurements
+5398734.2 9828.0
+after sleeping
+5398716.4 10718.0
+after waking up
+5398674.7333 10718.167
+after getting measurements
+5398584.7333 10721.167
+after sleeping
+5398566.9333 11611.167
+after waking up
+5398525.2667 11611.333
+after getting measurements
+5398500.2667 11614.333
+after sleeping
+5398482.4667 12504.333
+after waking up
+5398440.8 12504.5
+after getting measurements
+5398390.8 12507.5
+after sleeping
+5398373.0 13397.5
+after waking up
+5398331.3333 13397.667
+after getting measurements
+5398306.3333 13400.667
+after sleeping
+5398288.5333 14290.667
+after waking up
+5398246.8667 14290.833
+after getting measurements
+5398156.8667 14293.833
+after sleeping
+5398139.0667 15183.833
+after waking up
+5398097.4 15184.0
+after getting measurements
+5398072.4 15187.0
+after sleeping
+5398054.6 16077.0
+after waking up
+5398012.9333 16077.167
+after getting measurements
+5397962.9333 16080.167
+after sleeping
+5397945.1333 16970.167
+after waking up
+5397903.4667 16970.333
+after getting measurements
+5397878.4667 16973.333
+after sleeping
+5397860.6667 17863.333
+after waking up
+5397819.0 17863.5
+after getting measurements
+5397729.0 17866.5
+after sleeping
+5397711.2 18756.5
+after waking up
+5397669.5333 18756.667
+after getting measurements
+5397644.5333 18759.667
+after sleeping
+5397626.7333 19649.667
+after waking up
+5397585.0667 19649.833
+after getting measurements
+5397535.0667 19652.833
+after sleeping
+5397517.2667 20542.833
+after waking up
+5397475.6 20543.0
+after getting measurements
+5397450.6 20546.0
+after sleeping
+5397432.8 21436.0
+after waking up
+5397391.1333 21436.167
+after getting measurements
+5397301.1333 21439.167
+after sleeping
+5397283.3333 22329.167
+after waking up
+5397241.6667 22329.333
+after getting measurements
+5397216.6667 22332.333
+after sleeping
+5397198.8667 23222.333
+after waking up
+5397157.2 23222.5
+after getting measurements
+5397107.2 23225.5
+after sleeping
+5397089.4 24115.5
+after waking up
+5397047.7333 24115.667
+after getting measurements
+5397022.7333 24118.667
+after sleeping
+5397004.9333 25008.667
+after waking up
+5396963.2667 25008.833
+after getting measurements
+5396873.2667 25011.833
+after sleeping
+5396855.4667 25901.833
+after waking up
+5396813.8 25902.0
+after getting measurements
+5396788.8 25905.0
+after sleeping
+5396771.0 26795.0
+after waking up
+5396729.3333 26795.167
+after getting measurements
+5396679.3333 26798.167
+after sleeping
+5396661.5333 27688.167
+after waking up
+5396619.8667 27688.333
+after getting measurements
+5396594.8667 27691.333
+after sending packet
+5396316.7333 27696.94
+after sleeping
+5396298.9333 28586.94
+after waking up
+5396257.2667 28587.107
+after getting measurements
+5396167.2667 28590.107
+after sleeping
+5396149.4667 29480.107
+after waking up
+5396107.8 29480.273
+after getting measurements
+5396082.8 29483.273
+after sleeping
+5396065.0 30373.273
+after waking up
+5396023.3333 30373.44
+after getting measurements
+5395973.3333 30376.44
+after sleeping
+5395955.5333 31266.44
+after waking up
+5395913.8667 31266.607
+after getting measurements
+5395888.8667 31269.607
+after sleeping
+5395871.0667 32159.607
+after waking up
+5395829.4 32159.773
+after getting measurements
+5395739.4 32162.773
+after sleeping
+5395721.6 33052.773
+after waking up
+5395679.9333 33052.94
+after getting measurements
+5395654.9333 33055.94
+after sleeping
+5395637.1333 33945.94
+after waking up
+5395595.4667 33946.107
+after getting measurements
+5395545.4667 33949.107
+after sleeping
+5395527.6667 34839.107
+after waking up
+5395486.0 34839.273
+after getting measurements
+5395461.0 34842.273
+after sleeping
+5395443.2 35732.273
+after waking up
+5395401.5333 35732.44
+after getting measurements
+5395311.5333 35735.44
+after sleeping
+5395293.7333 36625.44
+after waking up
+5395252.0667 36625.607
+after getting measurements
+5395227.0667 36628.607
+after sleeping
+5395209.2667 37518.607
+after waking up
+5395167.6 37518.773
+after getting measurements
+5395117.6 37521.773
+after sleeping
+5395099.8 38411.773
+after waking up
+5395058.1333 38411.94
+after getting measurements
+5395033.1333 38414.94
+after sleeping
+5395015.3333 39304.94
+after waking up
+5394973.6667 39305.107
+after getting measurements
+5394883.6667 39308.107
+after sleeping
+5394865.8667 40198.107
+after waking up
+5394824.2 40198.273
+after getting measurements
+5394799.2 40201.273
+after sleeping
+5394781.4 41091.273
+after waking up
+5394739.7333 41091.44
+after getting measurements
+5394689.7333 41094.44
+after sleeping
+5394671.9333 41984.44
+after waking up
+5394630.2667 41984.607
+after getting measurements
+5394605.2667 41987.607
+after sleeping
+5394587.4667 42877.607
+after waking up
+5394545.8 42877.773
+after getting measurements
+5394455.8 42880.773
+after sleeping
+5394438.0 43770.773
+after waking up
+5394396.3333 43770.94
+after getting measurements
+5394371.3333 43773.94
+after sleeping
+5394353.5333 44663.94
+after waking up
+5394311.8667 44664.107
+after getting measurements
+5394261.8667 44667.107
+after sleeping
+5394244.0667 45557.107
+after waking up
+5394202.4 45557.273
+after getting measurements
+5394177.4 45560.273
+after sleeping
+5394159.6 46450.273
+after waking up
+5394117.9333 46450.44
+after getting measurements
+5394027.9333 46453.44
+after sleeping
+5394010.1333 47343.44
+after waking up
+5393968.4667 47343.607
+after getting measurements
+5393943.4667 47346.607
+after sleeping
+5393925.6667 48236.607
+after waking up
+5393884.0 48236.773
+after getting measurements
+5393834.0 48239.773
+after sleeping
+5393816.2 49129.773
+after waking up
+5393774.5333 49129.94
+after getting measurements
+5393749.5333 49132.94
+after sleeping
+5393731.7333 50022.94
+after waking up
+5393690.0667 50023.107
+after getting measurements
+5393600.0667 50026.107
+after sleeping
+5393582.2667 50916.107
+after waking up
+5393540.6 50916.273
+after getting measurements
+5393515.6 50919.273
+after sleeping
+5393497.8 51809.273
+after waking up
+5393456.1333 51809.44
+after getting measurements
+5393406.1333 51812.44
+after sleeping
+5393388.3333 52702.44
+after waking up
+5393346.6667 52702.607
+after getting measurements
+5393321.6667 52705.607
+after sleeping
+5393303.8667 53595.607
+after waking up
+5393262.2 53595.773
+after getting measurements
+5393172.2 53598.773
+after sleeping
+5393154.4 54488.773
+after waking up
+5393112.7333 54488.94
+after getting measurements
+5393087.7333 54491.94
+after sleeping
+5393069.9333 55381.94
+after waking up
+5393028.2667 55382.107
+after getting measurements
+5392978.2667 55385.107
+after sleeping
+5392960.4667 56275.107
+after waking up
+5392918.8 56275.273
+after getting measurements
+5392893.8 56278.273
+after sending packet
+5392615.6667 56283.88
+after sleeping
+5392597.8667 57173.88
+
+Energy: 462.633125 mAh per hr
+Expected battery life: 16 months

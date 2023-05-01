@@ -1,0 +1,57 @@
+inital energy level
+5400000 0
+after waking up
+5399958.3333 0.167
+after getting measurements
+5399868.3333 3.167
+after sleeping
+5399850.5333 893.167
+after waking up
+5399808.8667 893.333
+after getting measurements
+5399783.8667 896.333
+after sleeping
+5399766.0667 1786.333
+after waking up
+5399724.4 1786.5
+after getting measurements
+5399674.4 1789.5
+after sleeping
+5399656.6 2679.5
+after waking up
+5399614.9333 2679.667
+after getting measurements
+5399589.9333 2682.667
+after sending packet
+5399463.0 2684.913
+after sleeping
+5399445.2 3574.913
+after waking up
+5399403.5333 3575.08
+after getting measurements
+5399313.5333 3578.08
+after sleeping
+5399295.7333 4468.08
+after waking up
+5399254.0667 4468.247
+after getting measurements
+5399229.0667 4471.247
+after sleeping
+5399211.2667 5361.247
+after waking up
+5399169.6 5361.413
+after getting measurements
+5399119.6 5364.413
+after sleeping
+5399101.8 6254.413
+after waking up
+5399060.1333 6254.58
+after getting measurements
+5399035.1333 6257.58
+after sending packet
+5398908.2 6259.827
+after sleeping
+5398890.4 7149.827
+
+Energy: 554.8 mAh per hr
+Expected battery life: 13 months

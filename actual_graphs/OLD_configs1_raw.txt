@@ -1,0 +1,105 @@
+inital energy level
+5400000 0
+after waking up
+5399958.3333 0.167
+after getting measurements
+5399868.3333 3.167
+after sleeping
+5399850.5333 893.167
+after waking up
+5399808.8667 893.333
+after getting measurements
+5399783.8667 896.333
+after sleeping
+5399766.0667 1786.333
+after waking up
+5399724.4 1786.5
+after getting measurements
+5399674.4 1789.5
+after sleeping
+5399656.6 2679.5
+after waking up
+5399614.9333 2679.667
+after getting measurements
+5399589.9333 2682.667
+after sleeping
+5399572.1333 3572.667
+after waking up
+5399530.4667 3572.833
+after getting measurements
+5399440.4667 3575.833
+after sleeping
+5399422.6667 4465.833
+after waking up
+5399381.0 4466.0
+after getting measurements
+5399356.0 4469.0
+after sleeping
+5399338.2 5359.0
+after waking up
+5399296.5333 5359.167
+after getting measurements
+5399246.5333 5362.167
+after sleeping
+5399228.7333 6252.167
+after waking up
+5399187.0667 6252.333
+after getting measurements
+5399162.0667 6255.333
+after sending packet
+5399013.5333 6258.06
+after sleeping
+5398995.7333 7148.06
+after waking up
+5398954.0667 7148.227
+after getting measurements
+5398864.0667 7151.227
+after sleeping
+5398846.2667 8041.227
+after waking up
+5398804.6 8041.393
+after getting measurements
+5398779.6 8044.393
+after sleeping
+5398761.8 8934.393
+after waking up
+5398720.1333 8934.56
+after getting measurements
+5398670.1333 8937.56
+after sleeping
+5398652.3333 9827.56
+after waking up
+5398610.6667 9827.727
+after getting measurements
+5398585.6667 9830.727
+after sleeping
+5398567.8667 10720.727
+after waking up
+5398526.2 10720.893
+after getting measurements
+5398436.2 10723.893
+after sleeping
+5398418.4 11613.893
+after waking up
+5398376.7333 11614.06
+after getting measurements
+5398351.7333 11617.06
+after sleeping
+5398333.9333 12507.06
+after waking up
+5398292.2667 12507.227
+after getting measurements
+5398242.2667 12510.227
+after sleeping
+5398224.4667 13400.227
+after waking up
+5398182.8 13400.393
+after getting measurements
+5398157.8 13403.393
+after sending packet
+5398009.2667 13406.12
+after sleeping
+5397991.4667 14296.12
+
+Energy: 502.1325 mAh per hr
+Expected battery life: 15 months
