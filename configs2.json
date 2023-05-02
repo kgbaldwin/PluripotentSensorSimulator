@@ -1,0 +1,52 @@
+{
+   "variables": [
+       {"name": "temp",
+       "range_min": -20,
+       "range_max": 100,
+       "measure_E": 25,
+       "measure_freq": 30,
+       "measure_unit": "m"},
+
+       {"name": "light",
+       "range_min": 0,
+       "range_max": 5,
+       "measure_E": 25,
+       "measure_freq": 15,
+       "measure_unit": "m"},
+
+       {"name": "humid",
+       "range_min": 0,
+       "range_max": 1,
+       "measure_E": 40,
+       "measure_freq": 60,
+       "measure_unit": "m"}
+   ],
+
+   "functions": [
+       {"name": "mean",
+       "measure_freq": 1,
+       "measure_unit": "h",
+       "inputs": ["light"]},
+
+       {"name": "covariance",
+       "measure_freq": 90,
+       "measure_unit": "m",
+       "inputs": ["temp", "humid"]}
+   ],
+
+   "Energy": 1500,
+   "Raw_cache": 8,
+   "Compute_cache": 16,
+
+   "Wakeup_E": 250,
+   "Radio_E": 200,
+
+   "Wakeup_freq": 900,
+   "Wakeup_len": 10,
+   "Wakeup_unit": "s",
+
+   "Sending_E": 45,
+   "Sleep_E": 0.02,
+   "Processor_E": 150,
+   "MIPS": 300
+}

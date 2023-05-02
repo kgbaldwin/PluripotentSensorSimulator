@@ -29,7 +29,7 @@ for i, f in enumerate(lines):
             else:
                 values.append(round(float(f.split()[0]), 2))
 
-diff = [round(values[x]-values[x+1], 2) for x in range(len(values)-1)]
+diff = [round(values[x]-values[x+1], 3) for x in range(len(values)-1)]
 print(t_vals)
 print(diff)
 
